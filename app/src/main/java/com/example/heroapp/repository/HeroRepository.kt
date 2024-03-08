@@ -21,8 +21,7 @@ class HeroRepository @Inject constructor(
    suspend fun getHeroes(heroName: String): Result<List<Hero>> {
        return try {
            val response = api.getHeroInfo(heroName)
-           //TODO devolver lista con la informacion de los heroes que se llaman batman
-           Result.success(listOf())
+           Result.success(listOf(response))
        } catch (e: Exception) {
            Result.failure(e)
        }

@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -68,32 +70,31 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Retrofit
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.squareup.okhttp3:okhttp:4.9.0")
-    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+    implementation (libs.okhttp)
+    implementation (libs.logging.interceptor)
 
     // Timber
-    implementation ("com.jakewharton.timber:timber:4.7.1")
+    implementation (libs.timber)
 
     // Coroutines
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3")
+    implementation (libs.kotlinx.coroutines.core)
+    implementation (libs.kotlinx.coroutines.android)
 
     // Coroutine Lifecycle Scopes
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
-    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
+    implementation (libs.androidx.lifecycle.viewmodel.ktx)
+    implementation (libs.androidx.lifecycle.runtime.ktx)
 
     // Coil
-    implementation ("io.coil-kt:coil:1.1.1")
-    implementation ("com.google.accompanist:accompanist-coil:0.7.0")
+    implementation (libs.coil)
+    implementation (libs.accompanist.coil)
+    implementation (libs.coil.compose)
 
     //Dagger - Hilt
-    implementation ("com.google.dagger:hilt-android:2.33-beta")
-    implementation ("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.0.0-alpha01")
-
-    implementation ("com.android.support:palette-v7:28.0.0")
-
-
+    implementation (libs.hilt.android)
+    implementation (libs.androidx.hilt.lifecycle.viewmodel)
+    implementation (libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.palette.ktx)
+    implementation(libs.androidx.hilt.navigation.fragment)
 }
