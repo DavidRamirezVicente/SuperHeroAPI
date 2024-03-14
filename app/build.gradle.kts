@@ -97,4 +97,11 @@ dependencies {
     implementation (libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.hilt.navigation.fragment)
+
+    implementation(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.work.v120)
+    implementation(libs.androidx.hilt.compiler.v120)
+    implementation(libs.androidx.work.runtime.ktx)
+
+
 }

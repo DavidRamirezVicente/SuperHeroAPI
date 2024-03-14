@@ -31,26 +31,28 @@ class HeroListViewModel @Inject constructor(
     private val repository: HeroRepository
 
 ): ViewModel() {
-
+    init {
+        loadHeroList("") // Cargar la lista al iniciar el ViewModel
+    }
 
     var heroList by mutableStateOf<List<HeroListEntry>>(listOf())
 
-/*fun loadHeroList(heroName: String){
+fun loadHeroList(heroName: String){
         viewModelScope.launch {
             val result = repository.getHeroesList(heroName)
-            when (result) {
-                is Resource.Success<List<Hero>> -> {
-                    heroList = result.data.map { hero ->
-                        HeroListEntry(hero.name, hero.image.url)
-                    }
+
+            result.onSuccess { heroes ->
+                heroList = heroes.map {
+                    HeroListEntry(
+                        heroName = it.name,
+                        imageUrl = it.image.url,
+                        id = it.id
+                    )
                 }
-                is Resource.Error -> {
-                    heroList = emptyList()
-                }
+
             }
         }
-    }*/
-
+    }
 
     fun calcDominantColor(drawable: Drawable, onFinish: (Color) -> Unit) {
         val bmp = (drawable as BitmapDrawable).bitmap.copy(Bitmap.Config.ARGB_8888, true)

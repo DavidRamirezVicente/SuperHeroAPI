@@ -4,7 +4,7 @@ data class Hero(
     val appearance: Appearance,
     val biography: Biography,
     val connections: Connections,
-    val id: Int,
+    val id: String,
     val image: Image,
     val name: String,
     val powerstats: Powerstats,

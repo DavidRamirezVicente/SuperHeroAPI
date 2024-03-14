@@ -35,36 +35,45 @@ import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImagePainter
 import com.example.heroapp.data.remote.responses.models.HeroListEntry
 import org.jetbrains.annotations.Async
 
 @Composable
 fun HeroListScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: HeroListViewModel = hiltViewModel() // Obtén el ViewModel utilizando Hilt
 ) {
     Surface(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize( )
     ) {
+        var searchTerm by remember { mutableStateOf("") }
+
         Column {
             Spacer(modifier = Modifier.height(20.dp))
             //TODO app logo
-        }
-        SearchBar(
-            hint = "Search",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
+            SearchBar(
+                hint = "Search",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                onSearch = { newSearchTerm ->
+                    searchTerm = newSearchTerm
+                    viewModel.loadHeroList(newSearchTerm) // Llama a loadHeroList con el término de búsqueda
+                }
+            )
 
+            HeroGrid(viewModel = viewModel, navController = navController)
         }
     }
-
 }
 
 @Composable
@@ -100,6 +109,8 @@ fun SearchBar(
         }
     }
 }
+
+
 @Composable
 fun HeroEntry(
     entry: HeroListEntry,
@@ -151,13 +162,15 @@ fun HeroEntry(
 }
 @Composable
 fun HeroGrid(
-    entries: List<HeroListEntry>,
+    viewModel: HeroListViewModel,
     navController: NavController
 ) {
-    LazyVerticalGrid(columns = GridCells.Fixed(2),
-        content = {
-            items(entries){ entry ->
-                HeroEntry(entry = entry, navController = navController )
-            }
-        })
+    val heroList = viewModel.heroList
+
+    LazyVerticalGrid(columns = GridCells.Fixed(2)) {
+        items(heroList) { heroEntry ->
+            HeroEntry(entry = heroEntry, navController = navController, viewModel = viewModel)
+        }
+    }
 }
+
