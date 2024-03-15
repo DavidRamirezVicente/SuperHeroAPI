@@ -19,6 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.heroapp.heroDetail.HeroDetailScreen
 import com.example.heroapp.heroList.HeroListScreen
 import com.example.heroapp.ui.theme.HeroAppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,8 +54,14 @@ class MainActivity : ComponentActivity() {
                             val color = it.arguments?.getInt("dominantColor")
                             color?.let { Color(it) } ?: Color.White
                         }
-                        val heroName = remember {
-                            it.arguments?.getString("heroName")
+                        val heroId = remember {
+                            it.arguments?.getString("heroId")
+                        }
+                        if (heroId != null) {
+                            HeroDetailScreen(
+                                dominantColor = dominantColor ,
+                                heroId = heroId,
+                                navController = navController)
                         }
                     }
                     composable("fav_hero_list"){

@@ -49,7 +49,7 @@ import org.jetbrains.annotations.Async
 @Composable
 fun HeroListScreen(
     navController: NavController,
-    viewModel: HeroListViewModel = hiltViewModel() // Obtén el ViewModel utilizando Hilt
+    viewModel: HeroListViewModel = hiltViewModel()
 ) {
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -67,10 +67,9 @@ fun HeroListScreen(
                     .padding(16.dp),
                 onSearch = { newSearchTerm ->
                     searchTerm = newSearchTerm
-                    viewModel.loadHeroList(newSearchTerm) // Llama a loadHeroList con el término de búsqueda
+                    viewModel.loadHeroList(newSearchTerm)
                 }
             )
-
             HeroGrid(viewModel = viewModel, navController = navController)
         }
     }
@@ -98,7 +97,6 @@ fun SearchBar(
                 .background(Color.White, CircleShape)
                 .padding(horizontal = 20.dp, vertical = 12.dp)
         )
-        // Mostrar el texto "Search" cuando no haya ninguna letra
         if (text.isEmpty()) {
             Text(
                 text = hint,
@@ -174,3 +172,9 @@ fun HeroGrid(
     }
 }
 
+@Preview
+@Composable
+fun HeroListScreenPreview() {
+    val navController = rememberNavController()
+    HeroListScreen(navController = navController)
+}

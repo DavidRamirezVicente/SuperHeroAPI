@@ -6,6 +6,7 @@ import javax.inject.Inject
 import android.graphics.drawable.BitmapDrawable
 
 import android.graphics.drawable.Drawable
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -23,6 +24,7 @@ import com.example.heroapp.repository.HeroRepository
 import com.example.heroapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.xml.transform.Result
 
 
@@ -32,7 +34,7 @@ class HeroListViewModel @Inject constructor(
 
 ): ViewModel() {
     init {
-        loadHeroList("") // Cargar la lista al iniciar el ViewModel
+        loadHeroList("Batman")
     }
 
     var heroList by mutableStateOf<List<HeroListEntry>>(listOf())
@@ -50,6 +52,9 @@ fun loadHeroList(heroName: String){
                     )
                 }
 
+            }
+            result.onFailure { exception ->
+                Timber.tag("HeroListViewModel").e(exception, "Error loading hero list")
             }
         }
     }
