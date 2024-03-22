@@ -2,6 +2,7 @@ package com.example.heroapp.heroDetail
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -23,6 +24,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -109,8 +113,8 @@ fun HeroDetailScreen(
                     val hero = result.getOrNull()
                     if (hero != null) {
                         AsyncImage(
-                            model = hero,
-                            contentDescription = null,
+                            model = hero.image,
+                            contentDescription = hero.name,
                             modifier = Modifier
                                 .size(heroImageSize)
                                 .offset(y = topPadding)
@@ -135,8 +139,7 @@ fun HeroDetailTopSection(
                     Color.Black,
                     Color.Transparent
                 )
-            )
-            )
+            ))
     ){
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -147,6 +150,21 @@ fun HeroDetailTopSection(
                 .offset(16.dp, 16.dp)
                 .clickable {
                     navController.popBackStack()
+                }
+        )
+    }
+    Box(
+        contentAlignment = Alignment.TopEnd
+    ){
+        Icon(
+            imageVector = Icons.Outlined.Star,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier
+                .size(36.dp)
+                .offset(16.dp, 16.dp)
+                .clickable {
+                    Icons.Filled.Star
                 }
         )
     }
@@ -183,7 +201,7 @@ fun HeroDetailSection(
             .verticalScroll(scrollState)
     ) {
         Text(
-            text = "#${heroInfo.id} #${heroInfo.name.capitalize(Locale.ROOT)}",
+            text = "#${heroInfo.id} #${firstCharCap(heroInfo.name)}",
             fontWeight = FontWeight.Bold,
             fontSize = 30.sp,
             textAlign = TextAlign.Center,
@@ -191,8 +209,8 @@ fun HeroDetailSection(
         )
         HeroRaceSection(info = heroInfo.appearance)
         HeroDetailDataSection(
-            heroWeight = heroInfo.appearance.weight,
-            heroHeight = heroInfo.appearance.height
+            heroWeight = heroInfo.appearance.weight[1],
+            heroHeight = heroInfo.appearance.height[1]
         )
         HeroBaseStats(powerstat = heroInfo.powerstats, heroParse = HeroParse())
 
@@ -211,10 +229,11 @@ fun HeroRaceSection(info: Appearance){
             modifier = Modifier
                 .clip(CircleShape)
                 .padding(horizontal = 8.dp)
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.onSurface)
+                .height(35.dp)
         ){
             Text(
-                text = info.race.capitalize(Locale.ROOT),
+                text = firstCharCap(info.race),
                 color = Color.White,
                 fontSize = 18.sp
             )
@@ -240,7 +259,7 @@ fun HeroDetailDataSection(
             .background(Color.LightGray))
         HeroDetailDataItem(
             dataValue = heroWeight,
-            dataUnit = "m",
+            dataUnit = "Cm",
             dataIcon = painterResource(id = R.drawable.baseline_height),
             modifier = Modifier.weight(1f)
         )
@@ -367,7 +386,10 @@ fun HeroBaseStats(
         }
     }
 }
-
+fun firstCharCap(input: String): String {
+    if (input.isEmpty()) return input
+    return input.substring(0, 1).uppercase() + input.substring(1)
+}
 
 @Preview
 @Composable

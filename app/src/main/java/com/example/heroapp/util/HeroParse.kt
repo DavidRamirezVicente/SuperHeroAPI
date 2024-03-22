@@ -14,7 +14,7 @@ import java.util.Locale
 class HeroParse {
 
     fun parseStatToColor(statName: String): Color {
-        return when(statName.toLowerCase(Locale.ROOT)) {
+        return when(statName.lowercase(Locale.ROOT)) {
             "intelligence" -> IntelligColor
             "strength" -> StrengthColor
             "speed" -> SpeedColor

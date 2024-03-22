@@ -1,5 +1,6 @@
 package com.example.heroapp.heroList
 
+import androidx.compose.foundation.Image
 import coil.request.ImageRequest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,28 +24,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImagePainter
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberAsyncImagePainter
 import com.example.heroapp.data.remote.responses.models.HeroListEntry
-import org.jetbrains.annotations.Async
 
 @Composable
 fun HeroListScreen(
@@ -109,6 +107,7 @@ fun SearchBar(
 }
 
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun HeroEntry(
     entry: HeroListEntry,
@@ -120,7 +119,7 @@ fun HeroEntry(
     var dominantColor by remember { mutableStateOf(defaultDominantColor) }
 
     Box(
-        contentAlignment = Center,
+        contentAlignment = Alignment.Center,
         modifier = modifier
             .shadow(10.dp, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
@@ -135,29 +134,49 @@ fun HeroEntry(
             )
             .clickable {
                 navController.navigate(
-                    "hero_detail_screen/${dominantColor.toArgb()}/${entry.heroName}"
+                    "hero_detail_screen/${dominantColor.toArgb()}/${entry.id}"
                 )
             }
     ) {
         Column {
-           val request = ImageRequest.Builder(LocalContext.current)
+            /*val request = ImageRequest.Builder(LocalContext.current)
                 .data(entry.imageUrl)
                 .target{
                     viewModel.calcDominantColor(it){color ->
                         dominantColor = color
                     }
                 }
-                .build()
-        }
+                .build()*/
+            val painter =
+                rememberAsyncImagePainter(ImageRequest.Builder
+                    (LocalContext.current).data(data = entry.imageUrl)
+                    .apply(block = fun ImageRequest.Builder.() {
+                        crossfade(true)
+                        listener { _, loadState ->
+                                viewModel.calcDominantColor(loadState.drawable.toBitmap()) { color ->
+                                    dominantColor = color
+                            }
+                        }
+                    }).build()
+                )
+
+            Image(
+                painter = painter,
+                contentDescription = entry.heroName,
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+
             Text(
                 text = entry.heroName,
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-
         }
+    }
 }
+
 @Composable
 fun HeroGrid(
     viewModel: HeroListViewModel,

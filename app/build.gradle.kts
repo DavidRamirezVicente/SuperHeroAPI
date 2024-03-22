@@ -90,8 +90,10 @@ dependencies {
     implementation (libs.coil)
     implementation (libs.accompanist.coil)
     implementation (libs.coil.compose)
+    implementation (libs.accompanist.coil.v0170)
 
-    //Dagger - Hilt
+
+    // Dagger - Hilt
     implementation (libs.hilt.android)
     implementation (libs.androidx.hilt.lifecycle.viewmodel)
     implementation (libs.androidx.hilt.navigation.compose)
@@ -102,6 +104,11 @@ dependencies {
     implementation(libs.androidx.hilt.work.v120)
     implementation(libs.androidx.hilt.compiler.v120)
     implementation(libs.androidx.work.runtime.ktx)
+
+
+    // Room
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.compiler)
 
 
 }
