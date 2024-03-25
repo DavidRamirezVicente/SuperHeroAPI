@@ -3,6 +3,8 @@ import org.gradle.kotlin.dsl.implementation
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.kapt)
 }
 
 android {
@@ -42,7 +44,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.7"
     }
     packaging {
         resources {
@@ -79,7 +81,6 @@ dependencies {
     implementation (libs.timber)
 
     // Coroutines
-    implementation (libs.kotlinx.coroutines.core)
     implementation (libs.kotlinx.coroutines.android)
 
     // Coroutine Lifecycle Scopes
@@ -88,27 +89,32 @@ dependencies {
 
     // Coil
     implementation (libs.coil)
-    implementation (libs.accompanist.coil)
     implementation (libs.coil.compose)
-    implementation (libs.accompanist.coil.v0170)
 
 
     // Dagger - Hilt
     implementation (libs.hilt.android)
-    implementation (libs.androidx.hilt.lifecycle.viewmodel)
     implementation (libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.palette.ktx)
+    implementation(libs.androidx.hilt.work)
     implementation(libs.androidx.hilt.navigation.fragment)
 
-    implementation(libs.hilt.android.compiler)
-    implementation(libs.androidx.hilt.work.v120)
-    implementation(libs.androidx.hilt.compiler.v120)
+    kapt(libs.hilt.android.compiler)
+    kapt(libs.androidx.hilt.compiler)
     implementation(libs.androidx.work.runtime.ktx)
 
 
     // Room
     implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.room.compiler)
+    kapt(libs.androidx.room.compiler)
+
+}
+
+hilt {
+    enableAggregatingTask = true
+}
 
 
+kapt {
+    correctErrorTypes = true
 }
