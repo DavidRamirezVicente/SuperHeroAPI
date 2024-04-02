@@ -391,14 +391,4 @@ fun firstCharCap(input: String): String {
     return input.substring(0, 1).uppercase() + input.substring(1)
 }
 
-@Preview
-@Composable
-fun HeroDetailPreview(){
-    val navController = rememberNavController()
-    HeroDetailScreen(
-        dominantColor = Color.Blue,
-        heroId = "70",
-        navController = navController
-    )
-}
 

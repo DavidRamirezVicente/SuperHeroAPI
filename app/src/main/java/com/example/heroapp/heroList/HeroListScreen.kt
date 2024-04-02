@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -39,10 +40,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import com.example.heroapp.data.remote.responses.models.HeroListEntry
+import timber.log.Timber
 
 @Composable
 fun HeroListScreen(
@@ -53,21 +53,19 @@ fun HeroListScreen(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize( )
     ) {
-        var searchTerm by remember { mutableStateOf("") }
-
         Column {
             Spacer(modifier = Modifier.height(20.dp))
             //TODO app logo
             SearchBar(
-                hint = "Search",
+                hint = "Search...",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                onSearch = { newSearchTerm ->
-                    searchTerm = newSearchTerm
-                    viewModel.loadHeroList(newSearchTerm)
-                }
-            )
+                    .padding(16.dp)
+            ){ newSearchTerm ->
+                viewModel.loadHeroList(newSearchTerm)
+                
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             HeroGrid(viewModel = viewModel, navController = navController)
         }
     }
@@ -87,6 +85,7 @@ fun SearchBar(
             onValueChange = {
                 text = it
                 onSearch(it)
+                Timber.d("Search term changed: $it")
             },
             textStyle = TextStyle(color = Color.Black),
             modifier = Modifier
@@ -106,8 +105,6 @@ fun SearchBar(
     }
 }
 
-
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun HeroEntry(
     entry: HeroListEntry,
@@ -116,7 +113,9 @@ fun HeroEntry(
     viewModel: HeroListViewModel = hiltViewModel()
 ) {
     val defaultDominantColor = MaterialTheme.colorScheme.surface
-    var dominantColor by remember { mutableStateOf(defaultDominantColor) }
+    var dominantColor by remember {
+        mutableStateOf(defaultDominantColor)
+    }
 
     Box(
         contentAlignment = Alignment.Center,
@@ -139,14 +138,6 @@ fun HeroEntry(
             }
     ) {
         Column {
-            /*val request = ImageRequest.Builder(LocalContext.current)
-                .data(entry.imageUrl)
-                .target{
-                    viewModel.calcDominantColor(it){color ->
-                        dominantColor = color
-                    }
-                }
-                .build()*/
             val painter =
                 rememberAsyncImagePainter(ImageRequest.Builder
                     (LocalContext.current).data(data = entry.imageUrl)
@@ -164,11 +155,12 @@ fun HeroEntry(
                 painter = painter,
                 contentDescription = entry.heroName,
                 modifier = Modifier
-                    .fillMaxSize()
+                    .size(120.dp)
+                    .align(Alignment.CenterHorizontally)
             )
 
             Text(
-                text = entry.heroName,
+                text = firstCharCap(entry.heroName),
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -184,16 +176,16 @@ fun HeroGrid(
 ) {
     val heroList = viewModel.heroList
 
-    LazyVerticalGrid(columns = GridCells.Fixed(2)) {
+    LazyVerticalGrid(modifier = Modifier
+        .fillMaxSize(),
+        columns = GridCells.Fixed(2)) {
         items(heroList) { heroEntry ->
             HeroEntry(entry = heroEntry, navController = navController, viewModel = viewModel)
         }
     }
 }
-
-@Preview
-@Composable
-fun HeroListScreenPreview() {
-    val navController = rememberNavController()
-    HeroListScreen(navController = navController)
+fun firstCharCap(input: String): String {
+    if (input.isEmpty()) return input
+    return input.substring(0, 1).uppercase() + input.substring(1)
 }
+

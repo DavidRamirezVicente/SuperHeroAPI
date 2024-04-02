@@ -7,9 +7,10 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface HeroApi {
-    @GET("search/{name}")
+    @GET("api/{apiKey}/search/{name}")
     suspend fun getHeroList(
-        @Path("name") heroName: String
+        @Path("name") heroName: String,
+        @Path("apiKey") apiKey: String
     ): HeroResponse
 
     @GET("hero/{character_id}")

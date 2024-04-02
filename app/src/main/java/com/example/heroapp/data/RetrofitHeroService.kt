@@ -4,11 +4,13 @@ import com.example.heroapp.data.remote.HeroApi
 import com.example.heroapp.data.remote.responses.Hero
 import com.example.heroapp.data.remote.responses.HeroResponse
 import com.example.heroapp.domain.HeroServices
+import com.example.heroapp.util.Constants
 
 class RetrofitHeroService(private val api: HeroApi) : HeroServices {
 
     override suspend fun searchHeroByName(name: String): List<Hero> {
-        val heroResponse = api.getHeroList(name)
+        val apiKey = Constants.apiKey
+        val heroResponse = api.getHeroList(apiKey,name)
         return heroResponse.heroList
     }
 
