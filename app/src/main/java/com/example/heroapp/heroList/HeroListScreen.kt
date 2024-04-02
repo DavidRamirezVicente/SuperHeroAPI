@@ -4,8 +4,10 @@ import androidx.compose.foundation.Image
 import coil.request.ImageRequest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +24,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.heroapp.data.remote.responses.models.HeroListEntry
 import timber.log.Timber
@@ -49,27 +53,27 @@ fun HeroListScreen(
     navController: NavController,
     viewModel: HeroListViewModel = hiltViewModel()
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxSize( )
-    ) {
-        Column {
-            Spacer(modifier = Modifier.height(20.dp))
-            //TODO app logo
-            SearchBar(
-                hint = "Search...",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ){ newSearchTerm ->
-                viewModel.loadHeroList(newSearchTerm)
-                
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Cyan)
+        ) {
+            Column() {
+                Spacer(modifier = Modifier.height(20.dp))
+                //TODO app logo
+                SearchBar(
+                    hint = "Search...",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) { newSearchTerm ->
+                    viewModel.loadHeroList(newSearchTerm)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                HeroGrid(viewModel = viewModel, navController = navController)
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            HeroGrid(viewModel = viewModel, navController = navController)
         }
     }
-}
 
 @Composable
 fun SearchBar(
@@ -176,9 +180,14 @@ fun HeroGrid(
 ) {
     val heroList = viewModel.heroList
 
-    LazyVerticalGrid(modifier = Modifier
-        .fillMaxSize(),
-        columns = GridCells.Fixed(2)) {
+    LazyVerticalGrid(
+        modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.surface),
+        columns = GridCells.Fixed(2),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
         items(heroList) { heroEntry ->
             HeroEntry(entry = heroEntry, navController = navController, viewModel = viewModel)
         }
@@ -188,4 +197,11 @@ fun firstCharCap(input: String): String {
     if (input.isEmpty()) return input
     return input.substring(0, 1).uppercase() + input.substring(1)
 }
+
+/*@Preview
+@Composable
+fun HeroLsitPreview(){
+    val navController = rememberNavController()
+    HeroListScreen(navController = navController)
+}*/
 

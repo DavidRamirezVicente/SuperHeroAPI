@@ -48,8 +48,8 @@ fun loadHeroList(heroName: String){
     }
 
     fun calcDominantColor(bitmap : Bitmap, onFinish: (Color) -> Unit) {
-        //val bmp = (bitmap as BitmapDrawable). bitmap.copy(Bitmap.Config.ARGB_8888, true)
-        Palette.from(bitmap).generate { palette ->
+        val compatibleBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+        Palette.from(compatibleBitmap).generate { palette ->
             palette?.dominantSwatch?.rgb?.let { colorValue ->
                 onFinish(Color(colorValue))
             }
