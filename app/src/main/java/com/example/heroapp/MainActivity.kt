@@ -30,12 +30,12 @@ class MainActivity : ComponentActivity() {
                     }
                     // Pantalla para mostrar los detalles de un héroe.
                     composable(
-                        "hero_detail_screen/{dominantColor}/{heroName}",
+                        "hero_detail_screen/{dominantColor}/{heroId}",
                         arguments = listOf(
                             navArgument("dominantColor") {
                                 type = NavType.IntType
                             },
-                            navArgument("heroName") {
+                            navArgument("heroId") {
                                 type = NavType.StringType
                             }
                         )

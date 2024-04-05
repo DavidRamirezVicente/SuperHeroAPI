@@ -2,7 +2,6 @@ package com.example.heroapp.heroDetail
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -24,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Icon
@@ -47,20 +45,17 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.heroapp.R
 import com.example.heroapp.data.remote.responses.Appearance
-import com.example.heroapp.data.remote.responses.Hero
+import com.example.heroapp.data.remote.responses.HeroItemResponse
 import com.example.heroapp.data.remote.responses.Powerstats
 import com.example.heroapp.util.HeroParse
-import java.util.Locale
 
 
 @Composable
@@ -68,11 +63,11 @@ fun HeroDetailScreen(
     dominantColor: Color,
     heroId: String,
     navController: NavController,
-    topPadding: Dp = 20.dp,
+    topPadding: Dp = 70.dp,
     heroImageSize: Dp = 200.dp,
     viewModel: HeroDetailViewModel = hiltViewModel()
 ){
-    val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
+    val heroInfoResult by produceState<Result<HeroItemResponse>?>(initialValue = null) {
         value = viewModel.getHeroInfo(heroId)
     }
     Box(modifier = Modifier
@@ -113,7 +108,7 @@ fun HeroDetailScreen(
                     val hero = result.getOrNull()
                     if (hero != null) {
                         AsyncImage(
-                            model = hero.image,
+                            model = hero.image.url,
                             contentDescription = hero.name,
                             modifier = Modifier
                                 .size(heroImageSize)
@@ -132,7 +127,7 @@ fun HeroDetailTopSection(
     modifier: Modifier = Modifier
 ) {
     Box(
-        contentAlignment = Alignment.TopStart,
+        contentAlignment = Alignment.TopEnd,
         modifier = modifier
             .background(Brush.verticalGradient(
                 listOf(
@@ -140,6 +135,21 @@ fun HeroDetailTopSection(
                     Color.Transparent
                 )
             ))
+    ){
+        Icon(
+            imageVector = Icons.Outlined.Star,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier
+                .size(55.dp)
+                .padding(top = 16.dp, end = 16.dp)
+                .clickable {
+                    Icons.Filled.Star
+                }
+        )
+    }
+    Box(
+        contentAlignment = Alignment.TopStart
     ){
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -153,26 +163,11 @@ fun HeroDetailTopSection(
                 }
         )
     }
-    Box(
-        contentAlignment = Alignment.TopEnd
-    ){
-        Icon(
-            imageVector = Icons.Outlined.Star,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier
-                .size(36.dp)
-                .offset(16.dp, 16.dp)
-                .clickable {
-                    Icons.Filled.Star
-                }
-        )
-    }
 }
 
 @Composable
 fun HeroDetailStateWrapper(
-    heroInfo: Result<Hero>,
+    heroInfo: Result<HeroItemResponse>,
     modifier: Modifier = Modifier,
 ){
     if (heroInfo.isSuccess){
@@ -189,7 +184,7 @@ fun HeroDetailStateWrapper(
 
 @Composable
 fun HeroDetailSection(
-    heroInfo: Hero,
+    heroInfo: HeroItemResponse,
     modifier: Modifier = Modifier
 ){
     val scrollState = rememberScrollState()
@@ -199,13 +194,14 @@ fun HeroDetailSection(
             .fillMaxSize()
             .offset(y = 100.dp)
             .verticalScroll(scrollState)
+            .padding(top = 16.dp)
     ) {
         Text(
-            text = "#${heroInfo.id} #${firstCharCap(heroInfo.name)}",
+            text = firstCharCap(heroInfo.name),
             fontWeight = FontWeight.Bold,
             fontSize = 30.sp,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.surface
+            color = MaterialTheme.colorScheme.onSurface,
         )
         HeroRaceSection(info = heroInfo.appearance)
         HeroDetailDataSection(
@@ -229,8 +225,9 @@ fun HeroRaceSection(info: Appearance){
             modifier = Modifier
                 .clip(CircleShape)
                 .padding(horizontal = 8.dp)
-                .background(MaterialTheme.colorScheme.onSurface)
+                .background(MaterialTheme.colorScheme.primary)
                 .height(35.dp)
+                .weight(1f)
         ){
             Text(
                 text = firstCharCap(info.race),
@@ -247,19 +244,24 @@ fun HeroDetailDataSection(
     heroHeight: String,
     sectionHeight: Dp = 80.dp
 ){
-    Row(modifier = Modifier
-        .fillMaxWidth()) {
-        HeroDetailDataItem(dataValue = heroHeight,
-            dataUnit = "Kg",
+    Row(
+        modifier = Modifier
+        .fillMaxWidth()
+            .padding(top = 16.dp)
+    ) {
+        HeroDetailDataItem(
+            dataValue = heroWeight,
+            dataUnit = "",
             dataIcon = painterResource(id = R.drawable.weighticon),
             modifier = Modifier.weight(1f)
         )
         Spacer(modifier = Modifier
             .size(1.dp, sectionHeight)
-            .background(Color.LightGray))
+            .background(Color.LightGray)
+        )
         HeroDetailDataItem(
-            dataValue = heroWeight,
-            dataUnit = "Cm",
+            dataValue = heroHeight,
+            dataUnit = "",
             dataIcon = painterResource(id = R.drawable.baseline_height),
             modifier = Modifier.weight(1f)
         )
@@ -277,8 +279,10 @@ fun HeroDetailDataItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
+            .padding(16.dp
+            )
     ) {
-        Icon(painter = dataIcon, contentDescription = null, tint = MaterialTheme.colorScheme.surface)
+        Icon(painter = dataIcon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "$dataValue$dataUnit",
@@ -359,7 +363,7 @@ fun HeroBaseStats(
         Text(
             text = "Base stats:",
             fontSize = 20.sp,
-            color = MaterialTheme.colorScheme.surface
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(4.dp))
 

@@ -1,10 +1,9 @@
 package com.example.heroapp.data.remote
 
-import com.example.heroapp.data.remote.responses.Hero
+import com.example.heroapp.data.remote.responses.HeroItemResponse
 import com.example.heroapp.data.remote.responses.HeroResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
-import retrofit2.http.Query
 
 interface HeroApi {
     @GET("api/{apiKey}/search/{name}")
@@ -13,8 +12,9 @@ interface HeroApi {
         @Path("apiKey") apiKey: String
     ): HeroResponse
 
-    @GET("hero/{character_id}")
+    @GET("api/{apiKey}/{heroId}")
     suspend fun getHeroDetails(
-        @Path("character_id") heroId: String
-    ): Hero
+        @Path("heroId") heroId: String,
+        @Path("apiKey") apiKey: String
+    ): HeroItemResponse
 }

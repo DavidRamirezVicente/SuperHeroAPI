@@ -1,8 +1,10 @@
 package com.example.heroapp.domain
 
-import com.example.heroapp.data.remote.responses.Hero
+import com.example.heroapp.data.remote.responses.HeroItemResponse
 
 interface HeroServices {
-    suspend fun searchHeroByName(name: String): List<Hero>
-    suspend fun getHeroDetails(heroId: String): Hero
+    // Llamada de red
+    // Mapeo de response type a dominio
+    suspend fun searchHeroByName(name: String): List<HeroItemResponse>
+    suspend fun getHeroDetails(heroId: String): HeroItemResponse
 }

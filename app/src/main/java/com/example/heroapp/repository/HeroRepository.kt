@@ -1,12 +1,9 @@
 package com.example.heroapp.repository
 
 import com.example.heroapp.data.remote.HeroApi
-import com.example.heroapp.data.remote.responses.Hero
-import com.example.heroapp.data.remote.responses.HeroResponse
+import com.example.heroapp.data.remote.responses.HeroItemResponse
 import com.example.heroapp.util.Constants
-import com.example.heroapp.util.Resource
 import dagger.hilt.android.scopes.ActivityScoped
-import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -14,7 +11,7 @@ import javax.inject.Inject
 class HeroRepository @Inject constructor(
     private val api: HeroApi
 ){
-    suspend fun getHeroesList(heroName: String): Result<List<Hero>> {
+    suspend fun getHeroesList(heroName: String): Result<List<HeroItemResponse>> {
         return runCatching {
             val apiKey = Constants.apiKey;
             val response = api.getHeroList(heroName,apiKey)
@@ -25,9 +22,10 @@ class HeroRepository @Inject constructor(
         }
     }
 
-    suspend fun getHeroeInfo(heroId: String): Result<Hero> {
+    suspend fun getHeroeInfo(heroId: String): Result<HeroItemResponse> {
         return runCatching {
-            val response = api.getHeroDetails(heroId)
+            val apiKey = Constants.apiKey
+            val response = api.getHeroDetails(heroId, apiKey)
             Result.success(response)
         }.getOrElse { e ->
             Result.failure(e)

@@ -1,7 +1,7 @@
 package com.example.heroapp.heroDetail
 
 import androidx.lifecycle.ViewModel
-import com.example.heroapp.data.remote.responses.Hero
+import com.example.heroapp.data.remote.responses.HeroItemResponse
 import com.example.heroapp.repository.HeroRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -11,7 +11,7 @@ class HeroDetailViewModel @Inject constructor(
     private val repository: HeroRepository
 ): ViewModel() {
 
-    suspend fun getHeroInfo(id: String): Result<Hero> {
+    suspend fun getHeroInfo(id: String): Result<HeroItemResponse> {
         return  repository.getHeroeInfo(id)
     }
 }

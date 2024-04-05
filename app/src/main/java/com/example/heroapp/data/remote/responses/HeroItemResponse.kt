@@ -1,6 +1,6 @@
 package com.example.heroapp.data.remote.responses
 
-data class Hero(
+data class HeroItemResponse(
     val appearance: Appearance,
     val biography: Biography,
     val connections: Connections,

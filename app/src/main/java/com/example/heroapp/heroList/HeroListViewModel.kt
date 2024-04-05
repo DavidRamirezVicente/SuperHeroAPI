@@ -36,7 +36,7 @@ fun loadHeroList(heroName: String){
                     HeroListEntry(
                         heroName = it.name,
                         id = it.id,
-                        imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/${it.id}.jpg"
+                        imageUrl = it.image.url
                     )
                 }
 
