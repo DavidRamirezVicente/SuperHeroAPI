@@ -3,6 +3,7 @@ package com.example.heroapp.heroList
 import android.graphics.Bitmap
 import javax.inject.Inject
 import android.graphics.drawable.BitmapDrawable
+import androidx.compose.material3.TimeInput
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +32,7 @@ fun loadHeroList(heroName: String){
     Timber.d("Cargando lista de héroes con el nombre: $heroName")
         viewModelScope.launch {
             val result = repository.getHeroesList(heroName)
+
             result.onSuccess { heroes ->
                 heroList = heroes.map {
                     HeroListEntry(

@@ -11,6 +11,7 @@ class RetrofitHeroService(private val api: HeroApi) : HeroServices {
         val apiKey = Constants.apiKey
         val heroResponse = api.getHeroList(apiKey,name)
         return heroResponse.heroList
+        //return HeroMapper.buildFrom(response = request.body)
     }
 
     override suspend fun getHeroDetails(heroId: String): HeroItemResponse {

@@ -56,7 +56,7 @@ fun HeroListScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Cyan)
+                .background(MaterialTheme.colorScheme.primaryContainer)
         ) {
             Column() {
                 Spacer(modifier = Modifier.height(20.dp))
@@ -67,7 +67,12 @@ fun HeroListScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) { newSearchTerm ->
-                    viewModel.loadHeroList(newSearchTerm)
+                    if (newSearchTerm.isNotEmpty()){
+                        viewModel.loadHeroList(newSearchTerm)
+                    } else {
+                        Timber.d("Escribe el nombre de un superheroe")
+                    }
+
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 HeroGrid(viewModel = viewModel, navController = navController)
@@ -176,17 +181,19 @@ fun HeroEntry(
 @Composable
 fun HeroGrid(
     viewModel: HeroListViewModel,
-    navController: NavController
+    navController: NavController,
 ) {
     val heroList = viewModel.heroList
 
     LazyVerticalGrid(
         modifier = Modifier
         .fillMaxSize()
-        .background(MaterialTheme.colorScheme.surface),
+        .background(MaterialTheme.colorScheme.primaryContainer)
+        .padding(16.dp),
         columns = GridCells.Fixed(2),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
+
     ) {
         items(heroList) { heroEntry ->
             HeroEntry(entry = heroEntry, navController = navController, viewModel = viewModel)

@@ -5,6 +5,6 @@ import com.google.gson.annotations.SerializedName
 data class HeroResponse(
     val response: String,
     @SerializedName("results")
-    val heroList: List<HeroItemResponse>,
+val heroList: List<HeroItemResponse>,
     val resultsFor: String
 )

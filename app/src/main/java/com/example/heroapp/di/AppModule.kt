@@ -5,10 +5,13 @@ import com.example.heroapp.data.remote.HeroApi
 import com.example.heroapp.domain.HeroServices
 import com.example.heroapp.repository.HeroRepository
 import com.example.heroapp.util.Constants.BASE_URL
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -35,6 +38,11 @@ object AppModule {
     @Singleton
     @Provides
     fun provideHeroApi(): HeroApi {
+        /*val contentType = "application/json".toMediaType();
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(Json.asConverterFactory(contentType))
+            .build()*/
         return Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(BASE_URL)

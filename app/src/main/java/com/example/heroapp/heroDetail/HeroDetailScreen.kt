@@ -215,6 +215,10 @@ fun HeroDetailSection(
 
 @Composable
 fun HeroRaceSection(info: Appearance){
+    var race = info.race
+    if (race.equals("null")){
+        race = "Unknown"
+    }
     Row(
         verticalAlignment =  Alignment.CenterVertically,
         modifier = Modifier
@@ -230,7 +234,7 @@ fun HeroRaceSection(info: Appearance){
                 .weight(1f)
         ){
             Text(
-                text = firstCharCap(info.race),
+                text = firstCharCap(race),
                 color = Color.White,
                 fontSize = 18.sp
             )
@@ -246,7 +250,7 @@ fun HeroDetailDataSection(
 ){
     Row(
         modifier = Modifier
-        .fillMaxWidth()
+            .fillMaxWidth()
             .padding(top = 16.dp)
     ) {
         HeroDetailDataItem(
@@ -301,12 +305,13 @@ fun HeroStats(
     animDuration: Int = 1000,
     animDelay: Int = 0
 ){
+
     var animationPlayed by remember {
         mutableStateOf(false)
     }
     val curPercent = animateFloatAsState(
         targetValue = if (animationPlayed){
-            statValue.toInt() / statMaxValue.toFloat()
+            if (statValue == "null") 0f else statValue.toInt() / statMaxValue.toFloat()
         } else 0f,
         animationSpec = tween(
             animDuration,
@@ -342,10 +347,10 @@ fun HeroStats(
                 text = statName,
                 fontWeight = FontWeight.Bold
             )
+            Text(
+                text = (curPercent.value * statMaxValue).toInt().toString(),
+                fontWeight = FontWeight.Bold)
         }
-        Text(
-            text = (curPercent.value * statMaxValue).toInt().toString(),
-            fontWeight = FontWeight.Bold)
     }
 }
 
