@@ -55,6 +55,7 @@ import com.example.heroapp.R
 import com.example.heroapp.data.remote.responses.Appearance
 import com.example.heroapp.data.remote.responses.HeroItemResponse
 import com.example.heroapp.data.remote.responses.Powerstats
+import com.example.heroapp.domain.model.Hero
 import com.example.heroapp.util.HeroParse
 
 
@@ -67,7 +68,7 @@ fun HeroDetailScreen(
     heroImageSize: Dp = 200.dp,
     viewModel: HeroDetailViewModel = hiltViewModel()
 ){
-    val heroInfoResult by produceState<Result<HeroItemResponse>?>(initialValue = null) {
+    val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
         value = viewModel.getHeroInfo(heroId)
     }
     Box(modifier = Modifier
@@ -108,7 +109,7 @@ fun HeroDetailScreen(
                     val hero = result.getOrNull()
                     if (hero != null) {
                         AsyncImage(
-                            model = hero.image.url,
+                            model = hero.image,
                             contentDescription = hero.name,
                             modifier = Modifier
                                 .size(heroImageSize)
@@ -167,7 +168,7 @@ fun HeroDetailTopSection(
 
 @Composable
 fun HeroDetailStateWrapper(
-    heroInfo: Result<HeroItemResponse>,
+    heroInfo: Result<Hero>,
     modifier: Modifier = Modifier,
 ){
     if (heroInfo.isSuccess){
@@ -184,7 +185,7 @@ fun HeroDetailStateWrapper(
 
 @Composable
 fun HeroDetailSection(
-    heroInfo: HeroItemResponse,
+    heroInfo: Hero,
     modifier: Modifier = Modifier
 ){
     val scrollState = rememberScrollState()
@@ -361,7 +362,6 @@ fun HeroBaseStats(
     animDelayPerItem: Int = 100
 ){
     val maxBaseStat = 100
-
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {

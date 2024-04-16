@@ -18,6 +18,7 @@ kotlinxSerializationJson = "1.6.0"
 lifecycleRuntimeKtx = "2.7.0"
 composeBom = "2024.02.02"
 loggingInterceptor = "4.12.0"
+material = "1.6.5"
 okhttp = "4.12.0"
 paletteKtx = "1.0.0"
 paletteV7 = "28.0.0"
@@ -36,6 +37,7 @@ androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-com
 androidx-hilt-navigation-fragment = { module = "androidx.hilt:hilt-navigation-fragment", version.ref = "jetpackHilt" }
 androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "jetpackHilt" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version.ref = "paletteKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomCompiler" }
@@ -77,4 +79,4 @@ androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin"}
 hilt = { id = "com.google.dagger.hilt.android", version = "2.51" }
-kotlinSerial = {id = "org.jetbrains.kotlinx", version = "kotlin"}
+serialization = {id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}

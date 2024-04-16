@@ -10,7 +10,6 @@ import timber.log.Timber
 class HeroApplication : Application() {
 
     private lateinit var database: FavoriteHeroDatabase
-        private set
 
     override fun onCreate() {
         super.onCreate()

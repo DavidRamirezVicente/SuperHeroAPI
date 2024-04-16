@@ -13,7 +13,6 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -27,9 +26,10 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideHeroRepository(
-        api: HeroApi
-    ) = HeroRepository(api)
+    fun provideHeroRepository(api: HeroApi): HeroRepository {
+        val retrofitHeroService = provideHeroServices(api)
+        return HeroRepository(retrofitHeroService)
+    }
 
     /**
      * Método para proporcionar una instancia de [HeroApi].
@@ -38,14 +38,12 @@ object AppModule {
     @Singleton
     @Provides
     fun provideHeroApi(): HeroApi {
-        /*val contentType = "application/json".toMediaType();
+        val contentType = "application/json".toMediaType()
+        val json = Json { ignoreUnknownKeys = true }
+
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(Json.asConverterFactory(contentType))
-            .build()*/
-        return Retrofit.Builder()
-            .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(BASE_URL)
+            .addConverterFactory(json.asConverterFactory(contentType))
             .build()
             .create(HeroApi::class.java)
     }
