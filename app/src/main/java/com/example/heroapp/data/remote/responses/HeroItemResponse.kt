@@ -1,12 +1,15 @@
 package com.example.heroapp.data.remote.responses
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+@Serializable
 data class HeroItemResponse(
-    val appearance: Appearance,
-    val biography: Biography,
-    val connections: Connections,
+    val appearance: @Contextual Appearance,
+    val biography: @Contextual Biography,
+    val connections: @Contextual Connections,
     val id: String,
-    val image: Image,
+    val image: @Contextual Image,
     val name: String,
-    val powerstats: Powerstats,
-    val work: Work
+    val powerstats: @Contextual Powerstats,
+    val work: @Contextual Work
 )

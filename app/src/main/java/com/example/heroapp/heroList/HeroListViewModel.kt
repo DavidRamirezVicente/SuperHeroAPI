@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
 import com.example.heroapp.data.remote.responses.models.HeroListEntry
+import com.example.heroapp.domain.mapper.HeroMapper
 import com.example.heroapp.repository.HeroRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -38,7 +39,7 @@ fun loadHeroList(heroName: String){
                     HeroListEntry(
                         heroName = it.name,
                         id = it.id,
-                        imageUrl = it.image.url
+                        imageUrl = it.image
                     )
                 }
 

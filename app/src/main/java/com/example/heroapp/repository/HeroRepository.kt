@@ -1,20 +1,16 @@
 package com.example.heroapp.repository
 
-import android.content.Context
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 import com.example.heroapp.data.remote.HeroApi
-import com.example.heroapp.data.remote.responses.HeroItemResponse
-import com.example.heroapp.util.Constants
+import com.example.heroapp.domain.HeroServices
+import com.example.heroapp.domain.model.Hero
 import dagger.hilt.android.scopes.ActivityScoped
-import timber.log.Timber
 import javax.inject.Inject
 
 @ActivityScoped
 class HeroRepository @Inject constructor(
-    private val api: HeroApi
+    private val heroService: HeroServices
 ){
-    suspend fun getHeroesList(heroName: String): Result<List<HeroItemResponse>> {
+    /*suspend fun getHeroesList(heroName: String): Result<List<HeroItemResponse>> {
         return runCatching {
             val apiKey = Constants.apiKey
             val response = api.getHeroList(heroName, apiKey)
@@ -37,6 +33,24 @@ class HeroRepository @Inject constructor(
             val response = api.getHeroDetails(heroId, apiKey)
             Result.success(response)
         }.getOrElse { e ->
+            Result.failure(e)
+        }
+    }*/
+
+
+   suspend fun getHeroesList(heroName: String): Result<List<Hero>>{
+        return runCatching {
+            val heroes = heroService.searchHeroByName(heroName)
+            Result.success(heroes)
+        }.getOrElse { e ->
+            Result.failure(e)
+        }
+    }
+    suspend fun getHeroeInfo(heroId: String): Result<Hero> {
+        return runCatching {
+            val hero = heroService.getHeroDetails(heroId)
+            Result.success(hero)
+        }.getOrElse { e->
             Result.failure(e)
         }
     }

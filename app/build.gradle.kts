@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kapt)
-    //alias(libs.plugins.kotlinSerial)
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -71,6 +71,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.material)
 
     // Retrofit
     implementation (libs.retrofit)
