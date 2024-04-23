@@ -1,7 +1,15 @@
 package com.example.heroapp.heroDetail
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -17,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,8 +34,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,14 +58,17 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.heroapp.R
 import com.example.heroapp.data.remote.responses.Appearance
+import com.example.heroapp.data.remote.responses.Biography
 import com.example.heroapp.data.remote.responses.HeroItemResponse
 import com.example.heroapp.data.remote.responses.Powerstats
 import com.example.heroapp.domain.model.Hero
@@ -64,22 +80,25 @@ fun HeroDetailScreen(
     dominantColor: Color,
     heroId: String,
     navController: NavController,
+    //Paddign para dejar espacio a la imagen y al wrapper
     topPadding: Dp = 70.dp,
     heroImageSize: Dp = 200.dp,
     viewModel: HeroDetailViewModel = hiltViewModel()
 ){
+
     val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
         value = viewModel.getHeroInfo(heroId)
     }
     Box(modifier = Modifier
         .fillMaxSize()
         .background(dominantColor)
+        //Dejar espacio abajo
         .padding(bottom = 16.dp)
     ){
         HeroDetailTopSection(navController = navController,
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.2f)
+                //.fillMaxHeight(1f)
                 .align(Alignment.TopCenter)
         )
         heroInfoResult?.let { result ->
@@ -106,16 +125,14 @@ fun HeroDetailScreen(
         ) {
             heroInfoResult?.let { result ->
                 if (result.isSuccess) {
-                    val hero = result.getOrNull()
-                    if (hero != null) {
-                        AsyncImage(
-                            model = hero.image,
-                            contentDescription = hero.name,
-                            modifier = Modifier
-                                .size(heroImageSize)
-                                .offset(y = topPadding)
-                        )
-                    }
+                    val hero = result.getOrThrow()
+                    AsyncImage(
+                        model = hero.image,
+                        contentDescription = hero.name,
+                        modifier = Modifier
+                            .size(heroImageSize)
+                            .offset(y = topPadding)
+                    )
                 }
             }
         }
@@ -189,6 +206,7 @@ fun HeroDetailSection(
     modifier: Modifier = Modifier
 ){
     val scrollState = rememberScrollState()
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
@@ -209,6 +227,8 @@ fun HeroDetailSection(
             heroWeight = heroInfo.appearance.weight[1],
             heroHeight = heroInfo.appearance.height[1]
         )
+        HeroBiography(biography = heroInfo.biography)
+        Spacer(modifier = Modifier.height(16.dp))
         HeroBaseStats(powerstat = heroInfo.powerstats, heroParse = HeroParse())
 
     }
@@ -333,6 +353,7 @@ fun HeroStats(
                     Color.LightGray
                 }
             )
+            .clip(RoundedCornerShape(16.dp))
     ){
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -340,7 +361,7 @@ fun HeroStats(
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth(curPercent.value)
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(16.dp))
                 .background(statColor)
                 .padding(horizontal = 8.dp)
         ) {
@@ -359,45 +380,174 @@ fun HeroStats(
 fun HeroBaseStats(
     powerstat: Powerstats,
     heroParse: HeroParse,
-    animDelayPerItem: Int = 100
-){
+    animDelayPerItem: Int = 100,
+) {
     val maxBaseStat = 100
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    var expanded by rememberSaveable { mutableStateOf(false) }
+
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
     ) {
-        Text(
-            text = "Base stats:",
-            fontSize = 20.sp,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.height(4.dp))
+        Column(
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .fillMaxSize()
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .fillMaxSize()
+            ) {
+                Text(
+                    text = "Powerstats",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    onClick = { expanded = !expanded },
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(40.dp)
+                ) {
+                    Text(if (expanded) "Hide" else "Show")
+                }
+            }
 
-        val properties = listOf(
-            "Combat" to powerstat.combat,
-            "Durability" to powerstat.durability,
-            "Intelligence" to powerstat.intelligence,
-            "Power" to powerstat.power,
-            "Speed" to powerstat.speed,
-            "Strength" to powerstat.strength
-        )
+            AnimatedVisibility(
+                visible = expanded,
+                enter = slideInVertically(initialOffsetY = { 40 }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { 40 }) + fadeOut()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                ) {
+                    Spacer(modifier = Modifier.height(4.dp))
 
-        for ((statName, statValue) in properties) {
-            val statColor = heroParse.parseStatToColor(statName)
-            HeroStats(
-                statName = statName,
-                statValue = statValue,
-                statMaxValue = maxBaseStat,
-                statColor = statColor,
-                animDelay = animDelayPerItem
-            )
-            Spacer(modifier = Modifier
-                .height(8.dp))
+                    val properties = listOf(
+                        "Combat" to powerstat.combat,
+                        "Durability" to powerstat.durability,
+                        "Intelligence" to powerstat.intelligence,
+                        "Power" to powerstat.power,
+                        "Speed" to powerstat.speed,
+                        "Strength" to powerstat.strength
+                    )
+
+                    for ((statName, statValue) in properties) {
+                        val statColor = heroParse.parseStatToColor(statName)
+                        HeroStats(
+                            statName = statName,
+                            statValue = statValue,
+                            statMaxValue = maxBaseStat,
+                            statColor = statColor,
+                            animDelay = animDelayPerItem
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    Spacer(modifier = Modifier.height(55.dp))
+
+                }
+            }
         }
     }
 }
+@Composable
+fun BiographyItem(
+    title: String,
+    value: String
+) {
+    Column(
+        modifier = Modifier.padding(bottom = 8.dp)
+    ) {
+        Text(
+            text = title,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
+        Text(
+            text = value,
+            fontSize = 14.sp
+        )
+    }
+}
+@Composable
+fun HeroBiography(
+    biography: Biography
+){
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = Modifier.fillMaxSize()
+            .clip(RoundedCornerShape(16.dp))
+    ) {
+        Column(
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .fillMaxSize()
+            ) {
+                Text(
+                    text = "Biography",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    onClick = { expanded = !expanded },
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(40.dp)
+                ) {
+                    Text(if (expanded) "Hide" else "Show")
+                }
+            }
+
+            AnimatedVisibility(
+                visible = expanded,
+                enter = slideInVertically(initialOffsetY = { 40 }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { 40 }) + fadeOut()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    biography.fullName.let { BiographyItem(title = "Full Name:", value = it) }
+                    biography.alterEgos?.let { BiographyItem(title = "AlterEgos:", value = it) }
+                    BiographyItem(title = "Aliases:", value = biography.aliases.joinToString())
+                    biography.placeOfBirth?.let { BiographyItem(title = "Place of birth:", value = it) }
+                    biography.firstAppearance?.let { BiographyItem(title = "First Appearance:", value = it) }
+                    BiographyItem(title = "Publisher:", value = biography.publisher)
+                    BiographyItem(title = "Alignment:", value = biography.alignment)
+
+                }
+            }
+        }
+    }
+}
+
+
 fun firstCharCap(input: String): String {
     if (input.isEmpty()) return input
     return input.substring(0, 1).uppercase() + input.substring(1)
 }
+
 
 

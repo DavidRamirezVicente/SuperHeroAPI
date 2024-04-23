@@ -3,10 +3,18 @@ package com.example.heroapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.StringRes
-import androidx.compose.material.BottomNavigation
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults.containerColor
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -67,52 +75,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    /*sealed class Screen(val route: String, @StringRes val resourceId: Int) {
-        object HeroDetail : Screen("profile", R.string.profile)
-        object HeroList : Screen("herolist", R.string.friends_list)
-
-        object FavHeroes : Screen("favheroes", R.string.fav_heroes)
-    }
-    val items = listOf(
-        Screen.HeroList,
-        Screen.HeroDetail,
-        Screen.FavHeroes
-    )
-
-
-    Scaffold(
-    bottomBar = {
-        BottomNavigation {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
-            items.forEach { screen ->
-                BottomNavigationItem(
-                    icon = { Icon(Icons.Filled.Favorite, contentDescription = null) },
-                    label = { Text(stringResource(screen.resourceId)) },
-                    selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                    onClick = {
-                        navController.navigate(screen.route) {
-                            // Pop up to the start destination of the graph to
-                            // avoid building up a large stack of destinations
-                            // on the back stack as users select items
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            // Avoid multiple copies of the same destination when
-                            // reselecting the same item
-                            launchSingleTop = true
-                            // Restore state when reselecting a previously selected item
-                            restoreState = true
-                        }
-                    }
-                )
-            }
-        }
-    }
-    ) { innerPadding ->
-        NavHost(navController, startDestination = Screen.Profile.route, Modifier.padding(innerPadding)) {
-            composable(Screen.Profile.route) { Profile(navController) }
-            composable(Screen.FriendsList.route) { FriendsList(navController) }
-        }
-    }*/
 }
+

@@ -25,13 +25,15 @@ import timber.log.Timber
 class HeroListViewModel @Inject constructor(
     private val repository: HeroRepository
 
-): ViewModel() {
+) : ViewModel() {
 
     var heroList by mutableStateOf<List<HeroListEntry>>(listOf())
+    var isLoading by mutableStateOf(false);
 
-fun loadHeroList(heroName: String){
-    Timber.d("Cargando lista de héroes con el nombre: $heroName")
+    fun loadHeroList(heroName: String) {
+        Timber.d("Cargando lista de héroes con el nombre: $heroName")
         viewModelScope.launch {
+            isLoading = true
             val result = repository.getHeroesList(heroName)
 
             result.onSuccess { heroes ->
@@ -47,10 +49,11 @@ fun loadHeroList(heroName: String){
             result.onFailure { exception ->
                 Timber.tag("HeroListViewModel").e(exception, "Error loading hero list")
             }
+            isLoading = false
         }
     }
 
-    fun calcDominantColor(bitmap : Bitmap, onFinish: (Color) -> Unit) {
+    fun calcDominantColor(bitmap: Bitmap, onFinish: (Color) -> Unit) {
         val compatibleBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
         Palette.from(compatibleBitmap).generate { palette ->
             palette?.dominantSwatch?.rgb?.let { colorValue ->
