@@ -24,10 +24,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -53,6 +59,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.heroapp.data.remote.responses.models.HeroListEntry
 import timber.log.Timber
 
+
 @Composable
 fun HeroListScreen(
     navController: NavController,
@@ -67,7 +74,6 @@ fun HeroListScreen(
             Spacer(modifier = Modifier.height(20.dp))
             //TODO app logo
             SearchBar(
-                hint = "Search...",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -88,13 +94,12 @@ fun HeroListScreen(
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    hint: String = "",
     onSearch: (String) -> Unit = {}
 ) {
     var text by remember { mutableStateOf("") }
 
     Box(modifier = modifier) {
-        BasicTextField(
+        TextField(
             value = text,
             onValueChange = {
                 text = it
@@ -103,6 +108,21 @@ fun SearchBar(
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Search
             ),
+            label = { Text("Search...") },
+            singleLine = true,
+            placeholder = { Text("Write a superhero name") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Localized description") },
+            trailingIcon = {
+                if (text.isNotEmpty()) {
+                    Icon(
+                        Icons.Filled.Clear,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.clickable {
+                            text = ""
+                        }
+                    )
+                }
+            },
             keyboardActions = KeyboardActions(
                 onSearch = {
                     onSearch(text)
@@ -113,23 +133,8 @@ fun SearchBar(
                 .shadow(5.dp, CircleShape)
                 .background(Color.White, CircleShape)
                 .padding(horizontal = 20.dp, vertical = 12.dp)
-                .onPreviewKeyEvent {
-                    if (it.key == Key.Enter) {
-                        onSearch(text)
-                        true
-                    } else {
-                        false
-                    }
-                }
+                .clip(RoundedCornerShape(30.dp))
         )
-        if (text.isEmpty()) {
-            Text(
-                text = hint,
-                color = Color.LightGray,
-                modifier = Modifier
-                    .padding(horizontal = 20.dp, vertical = 12.dp)
-            )
-        }
     }
 }
 

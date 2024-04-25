@@ -15,4 +15,6 @@ class HeroDetailViewModel @Inject constructor(
     suspend fun getHeroInfo(id: String): Result<Hero> {
         return  repository.getHeroeInfo(id)
     }
+
+
 }

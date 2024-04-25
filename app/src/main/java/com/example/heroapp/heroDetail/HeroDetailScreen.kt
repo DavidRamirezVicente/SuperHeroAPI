@@ -74,7 +74,7 @@ import com.example.heroapp.data.remote.responses.Powerstats
 import com.example.heroapp.domain.model.Hero
 import com.example.heroapp.util.HeroParse
 
-
+//Alinear top de la caja amarilla en el centro de la imagen y añadir padding para que se vea el texto
 @Composable
 fun HeroDetailScreen(
     dominantColor: Color,
@@ -89,6 +89,7 @@ fun HeroDetailScreen(
     val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
         value = viewModel.getHeroInfo(heroId)
     }
+    //Column
     Box(modifier = Modifier
         .fillMaxSize()
         .background(dominantColor)
@@ -131,6 +132,7 @@ fun HeroDetailScreen(
                         contentDescription = hero.name,
                         modifier = Modifier
                             .size(heroImageSize)
+                            //Distancia entre la imagen y top
                             .offset(y = topPadding)
                     )
                 }
@@ -160,6 +162,7 @@ fun HeroDetailTopSection(
             tint = Color.White,
             modifier = Modifier
                 .size(55.dp)
+                //Margen para el icono de la estrella
                 .padding(top = 16.dp, end = 16.dp)
                 .clickable {
                     Icons.Filled.Star
@@ -175,6 +178,7 @@ fun HeroDetailTopSection(
             tint = Color.White,
             modifier = Modifier
                 .size(36.dp)
+                //Margen para el icono de la flecha
                 .offset(16.dp, 16.dp)
                 .clickable {
                     navController.popBackStack()
@@ -191,8 +195,10 @@ fun HeroDetailStateWrapper(
     if (heroInfo.isSuccess){
         HeroDetailSection(
             heroInfo =  heroInfo.getOrThrow(),
+            //Aqui esta el fallo
             modifier = modifier
-                .offset(y = (-20).dp))
+                .offset(y = (-20).dp)
+        )
 
     } else if (heroInfo.isFailure){
         Text(text = "Error fetching hero data. Please try again later.")
@@ -211,16 +217,17 @@ fun HeroDetailSection(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .fillMaxSize()
-            .offset(y = 100.dp)
+            //Fallo
+            .offset(y = -10.dp)
             .verticalScroll(scrollState)
-            .padding(top = 16.dp)
+            .padding(top = 120.dp)
     ) {
         Text(
             text = firstCharCap(heroInfo.name),
             fontWeight = FontWeight.Bold,
             fontSize = 30.sp,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onSurface
         )
         HeroRaceSection(info = heroInfo.appearance)
         HeroDetailDataSection(
@@ -267,6 +274,7 @@ fun HeroRaceSection(info: Appearance){
 fun HeroDetailDataSection(
     heroWeight: String,
     heroHeight: String,
+    //posible fallo
     sectionHeight: Dp = 80.dp
 ){
     Row(
@@ -453,8 +461,6 @@ fun HeroBaseStats(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    Spacer(modifier = Modifier.height(55.dp))
-
                 }
             }
         }
