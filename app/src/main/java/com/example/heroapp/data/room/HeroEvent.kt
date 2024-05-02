@@ -1,11 +1,9 @@
 package com.example.heroapp.data.room
 
-import com.example.heroapp.data.remote.responses.HeroItemResponse
-
 sealed interface HeroEvent {
-    object SaveHero: HeroEvent
-    //¿Poner los campos de Hero?
+    //interfaz para manejar los eventos que un usuario puede hacer en la UI
+    data class AddHero(val hero: FavoriteHero): HeroEvent
 
-    data class DeleteHero(val hero: HeroItemResponse): HeroEvent
+    data class DeleteHero(val hero: FavoriteHero): HeroEvent
 
 }

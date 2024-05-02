@@ -1,5 +1,9 @@
 package com.example.heroapp.data.room
 
-class HeroState {
+data class HeroState(
+    //Clase que contendra los heroes que estan actualmente visibles
+    val favHeroes: List<FavoriteHero> = emptyList()
+) {
+
 
 }

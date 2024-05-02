@@ -30,6 +30,9 @@ class HeroListViewModel @Inject constructor(
     var heroList by mutableStateOf<List<HeroListEntry>>(listOf())
     var isLoading by mutableStateOf(false);
 
+    init {
+        loadHeroList("a")
+    }
     fun loadHeroList(heroName: String) {
         Timber.d("Cargando lista de héroes con el nombre: $heroName")
         viewModelScope.launch {

@@ -1,7 +1,12 @@
 package com.example.heroapp.di
 
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+import com.example.heroapp.DatabaseModule
+import com.example.heroapp.HeroApplication
 import com.example.heroapp.data.RetrofitHeroService
 import com.example.heroapp.data.remote.HeroApi
+import com.example.heroapp.data.room.FavoriteHeroDatabase
 import com.example.heroapp.domain.HeroServices
 import com.example.heroapp.repository.HeroRepository
 import com.example.heroapp.util.Constants.BASE_URL
@@ -9,6 +14,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -26,9 +32,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideHeroRepository(api: HeroApi): HeroRepository {
-        val retrofitHeroService = provideHeroServices(api)
-        return HeroRepository(retrofitHeroService)
+    fun provideHeroRepository(heroService: HeroServices, db: FavoriteHeroDatabase): HeroRepository {
+        return HeroRepository(heroService, db)
     }
 
     /**

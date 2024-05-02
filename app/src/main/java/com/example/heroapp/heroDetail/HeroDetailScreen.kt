@@ -71,21 +71,27 @@ import com.example.heroapp.data.remote.responses.Appearance
 import com.example.heroapp.data.remote.responses.Biography
 import com.example.heroapp.data.remote.responses.HeroItemResponse
 import com.example.heroapp.data.remote.responses.Powerstats
+import com.example.heroapp.data.room.FavoriteHero
+import com.example.heroapp.data.room.FavoriteHeroDatabase
+import com.example.heroapp.data.room.HeroEvent
+import com.example.heroapp.data.room.HeroState
+import com.example.heroapp.data.room.HeroViewModel
 import com.example.heroapp.domain.model.Hero
 import com.example.heroapp.util.HeroParse
+import timber.log.Timber
 
-//Alinear top de la caja amarilla en el centro de la imagen y añadir padding para que se vea el texto
 @Composable
 fun HeroDetailScreen(
     dominantColor: Color,
     heroId: String,
     navController: NavController,
-    //Paddign para dejar espacio a la imagen y al wrapper
     topPadding: Dp = 70.dp,
     heroImageSize: Dp = 200.dp,
     viewModel: HeroDetailViewModel = hiltViewModel()
 ){
-
+    var isFavorite by remember {
+        mutableStateOf(false)
+    }
     val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
         value = viewModel.getHeroInfo(heroId)
     }
@@ -93,15 +99,29 @@ fun HeroDetailScreen(
     Box(modifier = Modifier
         .fillMaxSize()
         .background(dominantColor)
-        //Dejar espacio abajo
         .padding(bottom = 16.dp)
     ){
-        HeroDetailTopSection(navController = navController,
-            modifier = Modifier
-                .fillMaxWidth()
-                //.fillMaxHeight(1f)
-                .align(Alignment.TopCenter)
-        )
+        heroInfoResult?.getOrNull()?.let {
+            HeroDetailTopSection(
+                navController = navController,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    //.fillMaxHeight(1f)
+                    .align(Alignment.TopCenter),
+                isFavorite = isFavorite,
+                onFavorite = {
+                    isFavorite = if (isFavorite){
+                        viewModel.deleteFavoriteHero(heroId = it.id)
+                        Timber.d("Heroe eliminado")
+                        false
+                    } else {
+                        viewModel.saveFavoriteHero(id = it.id, name = it.name, imageUrl = it.image)
+                        Timber.d("Heroe guardado")
+                        true
+                    }
+                }
+            )
+        }
         heroInfoResult?.let { result ->
             HeroDetailStateWrapper(
                 heroInfo = result,
@@ -144,7 +164,11 @@ fun HeroDetailScreen(
 @Composable
 fun HeroDetailTopSection(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isFavorite: Boolean,
+    //viewModel: HeroDetailViewModel = hiltViewModel(),
+    //heroInfo: Hero?,
+    onFavorite: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.TopEnd,
@@ -157,15 +181,15 @@ fun HeroDetailTopSection(
             ))
     ){
         Icon(
-            imageVector = Icons.Outlined.Star,
+            imageVector = if (isFavorite) Icons.Outlined.Star else Icons.Filled.Star,
             contentDescription = null,
             tint = Color.White,
             modifier = Modifier
                 .size(55.dp)
                 //Margen para el icono de la estrella
                 .padding(top = 16.dp, end = 16.dp)
-                .clickable {
-                    Icons.Filled.Star
+                .clickable{
+                    onFavorite()
                 }
         )
     }
@@ -195,11 +219,9 @@ fun HeroDetailStateWrapper(
     if (heroInfo.isSuccess){
         HeroDetailSection(
             heroInfo =  heroInfo.getOrThrow(),
-            //Aqui esta el fallo
             modifier = modifier
                 .offset(y = (-20).dp)
         )
-
     } else if (heroInfo.isFailure){
         Text(text = "Error fetching hero data. Please try again later.")
     }
@@ -274,7 +296,6 @@ fun HeroRaceSection(info: Appearance){
 fun HeroDetailDataSection(
     heroWeight: String,
     heroHeight: String,
-    //posible fallo
     sectionHeight: Dp = 80.dp
 ){
     Row(
@@ -492,7 +513,8 @@ fun HeroBiography(
     var expanded by rememberSaveable { mutableStateOf(false) }
     Surface(
         color = MaterialTheme.colorScheme.secondaryContainer,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .clip(RoundedCornerShape(16.dp))
     ) {
         Column(

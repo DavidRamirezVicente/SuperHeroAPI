@@ -9,5 +9,5 @@ import androidx.room.RoomDatabase
 )
 abstract class FavoriteHeroDatabase: RoomDatabase() {
 
-    abstract val dao: FavoriteHeroDao
+    abstract val heroDao: FavoriteHeroDao
 }
