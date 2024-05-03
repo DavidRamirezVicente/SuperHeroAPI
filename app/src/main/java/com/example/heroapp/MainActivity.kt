@@ -140,16 +140,14 @@ class MainActivity : ComponentActivity() {
                                 val color = it.arguments?.getInt("dominantColor")
                                 color?.let { Color(it) } ?: Color.White
                             }
-                            val heroId = remember {
+                            /*val heroId = remember {
                                 it.arguments?.getString("heroId")
-                            }
-                            if (heroId != null) {
+                            }*/
+
                                 HeroDetailScreen(
                                     dominantColor = dominantColor,
-                                    heroId = heroId,
                                     navController = navController
                                 )
-                            }
                         }
                         composable("fav_hero_list") {
                         }

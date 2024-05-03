@@ -34,8 +34,6 @@ class HeroRepository @Inject constructor(
 
     val allFavorites: Flow<List<FavoriteHero>> = dataBase.heroDao.getFavoriteHeroes()
 
-
-
     suspend fun delete(heroId: String) {
         dataBase.heroDao.deleteHeroById(heroId)
     }

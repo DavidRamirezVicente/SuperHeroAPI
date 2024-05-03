@@ -37,11 +37,13 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -55,6 +57,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -83,17 +86,14 @@ import timber.log.Timber
 @Composable
 fun HeroDetailScreen(
     dominantColor: Color,
-    heroId: String,
     navController: NavController,
     topPadding: Dp = 70.dp,
     heroImageSize: Dp = 200.dp,
     viewModel: HeroDetailViewModel = hiltViewModel()
 ){
-    var isFavorite by remember {
-        mutableStateOf(false)
-    }
+    val isFavorite by viewModel.isFavorite.collectAsState()
     val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
-        value = viewModel.getHeroInfo(heroId)
+        value = viewModel.getHeroInfo(viewModel.heroId)
     }
     //Column
     Box(modifier = Modifier
@@ -109,15 +109,15 @@ fun HeroDetailScreen(
                     //.fillMaxHeight(1f)
                     .align(Alignment.TopCenter),
                 isFavorite = isFavorite,
-                onFavorite = {
-                    isFavorite = if (isFavorite){
-                        viewModel.deleteFavoriteHero(heroId = it.id)
+                onToogleAction =
+                {
+                    if (isFavorite){
+                        viewModel.deleteFavoriteHero(it.id)
                         Timber.d("Heroe eliminado")
-                        false
                     } else {
-                        viewModel.saveFavoriteHero(id = it.id, name = it.name, imageUrl = it.image)
+                        viewModel.saveFavoriteHero(it.id,it.name,it.image)
                         Timber.d("Heroe guardado")
-                        true
+
                     }
                 }
             )
@@ -165,10 +165,8 @@ fun HeroDetailScreen(
 fun HeroDetailTopSection(
     navController: NavController,
     modifier: Modifier = Modifier,
-    isFavorite: Boolean,
-    //viewModel: HeroDetailViewModel = hiltViewModel(),
-    //heroInfo: Hero?,
-    onFavorite: () -> Unit
+    onToogleAction: () -> Unit,
+    isFavorite: Boolean
 ) {
     Box(
         contentAlignment = Alignment.TopEnd,
@@ -180,18 +178,17 @@ fun HeroDetailTopSection(
                 )
             ))
     ){
-        Icon(
-            imageVector = if (isFavorite) Icons.Outlined.Star else Icons.Filled.Star,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier
-                .size(55.dp)
-                //Margen para el icono de la estrella
-                .padding(top = 16.dp, end = 16.dp)
-                .clickable{
-                    onFavorite()
-                }
-        )
+        IconButton(onClick = onToogleAction, Modifier.size(55.dp)) {
+            Icon(
+                imageVector = Icons.Filled.Star,
+                contentDescription = null,
+                tint = if (isFavorite) Color.Yellow else Color.White,
+                modifier = Modifier
+                    .size(55.dp)
+                    .padding(top = 16.dp, end = 16.dp)
+            )
+        }
+
     }
     Box(
         contentAlignment = Alignment.TopStart
@@ -240,7 +237,7 @@ fun HeroDetailSection(
         modifier = modifier
             .fillMaxSize()
             //Fallo
-            .offset(y = -10.dp)
+            .offset(y = (-10).dp)
             .verticalScroll(scrollState)
             .padding(top = 120.dp)
     ) {
