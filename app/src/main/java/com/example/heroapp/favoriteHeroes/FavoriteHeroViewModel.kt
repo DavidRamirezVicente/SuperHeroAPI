@@ -1,9 +1,10 @@
-package com.example.heroapp.data.room
+package com.example.heroapp.favoriteHeroes
 
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.palette.graphics.Palette
+import com.example.heroapp.data.room.FavoriteHero
 import com.example.heroapp.repository.HeroRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow

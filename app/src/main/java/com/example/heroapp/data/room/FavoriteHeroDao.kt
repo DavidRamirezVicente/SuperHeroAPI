@@ -21,5 +21,8 @@ interface FavoriteHeroDao {
     @Query("DELETE FROM favoritehero WHERE id = :heroId")
     suspend fun deleteHeroById(heroId: String)
 
+    /*@Query("SELECT * FROM favoritehero ORDER BY name = :heroName desc")
+    suspend fun orderByName(heroName: String)*/
+
 
 }

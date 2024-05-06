@@ -88,7 +88,6 @@ fun HeroDetailScreen(
     val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
         value = viewModel.getHeroInfo(viewModel.heroId)
     }
-    //Column
     Box(modifier = Modifier
         .fillMaxSize()
         .background(dominantColor)
@@ -115,6 +114,7 @@ fun HeroDetailScreen(
                 }
             )
         }
+
         heroInfoResult?.let { result ->
             HeroDetailStateWrapper(
                 heroInfo = result,
@@ -132,22 +132,22 @@ fun HeroDetailScreen(
                     .padding(16.dp)
                     .align(Alignment.BottomCenter)
             )
-        }
-        Box(contentAlignment = Alignment.TopCenter,
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            heroInfoResult?.let { result ->
-                if (result.isSuccess) {
-                    val hero = result.getOrThrow()
-                    AsyncImage(
-                        model = hero.image,
-                        contentDescription = hero.name,
-                        modifier = Modifier
-                            .size(heroImageSize)
-                            //Distancia entre la imagen y top
-                            .offset(y = topPadding)
-                    )
+            Box(contentAlignment = Alignment.TopCenter,
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                heroInfoResult?.let { result ->
+                    if (result.isSuccess) {
+                        val hero = result.getOrThrow()
+                        AsyncImage(
+                            model = hero.image,
+                            contentDescription = hero.name,
+                            modifier = Modifier
+                                .size(heroImageSize)
+                                //Distancia entre la imagen y top
+                                .offset(y = topPadding)
+                        )
+                    }
                 }
             }
         }
