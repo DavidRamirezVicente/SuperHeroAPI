@@ -9,7 +9,8 @@ data class FavoriteHero(
     @PrimaryKey
     val id: String,
     @ColumnInfo
-    val image: String,
-    @ColumnInfo
     val name: String,
+    @ColumnInfo
+    val image: String,
+
 )

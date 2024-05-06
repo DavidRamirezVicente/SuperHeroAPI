@@ -245,26 +245,3 @@ fun firstCharCap(input: String): String {
     return input.substring(0, 1).uppercase() + input.substring(1)
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*@Preview
-@Composable
-fun HeroLsitPreview(){
-    val navController = rememberNavController()
-    HeroListScreen(navController = navController)
-}*/
-

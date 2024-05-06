@@ -49,13 +49,6 @@ class HeroDetailViewModel @Inject constructor(
             repository.delete(heroId)
         }
     }
-    fun calcDominantColor(bitmap: Bitmap, onFinish: (Color) -> Unit) {
-        val compatibleBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-        Palette.from(compatibleBitmap).generate { palette ->
-            palette?.dominantSwatch?.rgb?.let { colorValue ->
-                onFinish(Color(colorValue))
-            }
-        }
-    }
+
 }
 

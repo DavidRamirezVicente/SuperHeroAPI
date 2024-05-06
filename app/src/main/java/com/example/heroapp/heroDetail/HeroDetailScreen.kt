@@ -67,18 +67,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.heroapp.R
 import com.example.heroapp.data.remote.responses.Appearance
 import com.example.heroapp.data.remote.responses.Biography
-import com.example.heroapp.data.remote.responses.HeroItemResponse
 import com.example.heroapp.data.remote.responses.Powerstats
-import com.example.heroapp.data.room.FavoriteHero
-import com.example.heroapp.data.room.FavoriteHeroDatabase
-import com.example.heroapp.data.room.HeroEvent
-import com.example.heroapp.data.room.HeroState
-import com.example.heroapp.data.room.HeroViewModel
 import com.example.heroapp.domain.model.Hero
 import com.example.heroapp.util.HeroParse
 import timber.log.Timber
@@ -115,7 +108,7 @@ fun HeroDetailScreen(
                         viewModel.deleteFavoriteHero(it.id)
                         Timber.d("Heroe eliminado")
                     } else {
-                        viewModel.saveFavoriteHero(it.id,it.name,it.image)
+                        viewModel.saveFavoriteHero(it.id, it.name, it.image)
                         Timber.d("Heroe guardado")
 
                     }
