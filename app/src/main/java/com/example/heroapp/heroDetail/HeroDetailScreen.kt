@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
@@ -39,6 +40,7 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -88,71 +90,77 @@ fun HeroDetailScreen(
     val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
         value = viewModel.getHeroInfo(viewModel.heroId)
     }
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(dominantColor)
-        .padding(bottom = 16.dp)
-    ){
-        heroInfoResult?.getOrNull()?.let {
-            HeroDetailTopSection(
-                navController = navController,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    //.fillMaxHeight(1f)
-                    .align(Alignment.TopCenter),
-                isFavorite = isFavorite,
-                onToogleAction =
-                {
-                    if (isFavorite){
-                        viewModel.deleteFavoriteHero(it.id)
-                        Timber.d("Heroe eliminado")
-                    } else {
-                        viewModel.saveFavoriteHero(it.id, it.name, it.image)
-                        Timber.d("Heroe guardado")
 
+    Scaffold(
+        topBar = {
+            heroInfoResult?.getOrNull()?.let {
+                HeroDetailTopSection(
+                    navController = navController,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    isFavorite = isFavorite,
+                    onToogleAction =
+                    {
+                        if (isFavorite){
+                            viewModel.deleteFavoriteHero(it.id)
+                            Timber.d("Heroe eliminado")
+                        } else {
+                            viewModel.saveFavoriteHero(it.id, it.name, it.image)
+                            Timber.d("Heroe guardado")
+
+                        }
                     }
-                }
-            )
-        }
+                )
+            }
 
-        heroInfoResult?.let { result ->
-            HeroDetailStateWrapper(
-                heroInfo = result,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = topPadding + heroImageSize / 2f,
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = 16.dp
-                    )
-                    .shadow(10.dp, RoundedCornerShape(10.dp))
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(16.dp)
-                    .align(Alignment.BottomCenter)
-            )
-            Box(contentAlignment = Alignment.TopCenter,
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                heroInfoResult?.let { result ->
-                    if (result.isSuccess) {
-                        val hero = result.getOrThrow()
-                        AsyncImage(
-                            model = hero.image,
-                            contentDescription = hero.name,
-                            modifier = Modifier
-                                .size(heroImageSize)
-                                //Distancia entre la imagen y top
-                                .offset(y = topPadding)
+        }
+    ) {innerPading ->
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(dominantColor)
+            .padding(innerPading)
+        ){
+            heroInfoResult?.let { result ->
+                HeroDetailStateWrapper(
+                    heroInfo = result,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = topPadding + heroImageSize / 4f,
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 16.dp
                         )
+                        .shadow(10.dp, RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp)
+                        .align(Alignment.BottomCenter)
+                )
+                Box(contentAlignment = Alignment.TopCenter,
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    heroInfoResult?.let { result ->
+                        if (result.isSuccess) {
+                            val hero = result.getOrThrow()
+                            AsyncImage(
+                                model = hero.image,
+                                contentDescription = hero.name,
+                                modifier = Modifier
+                                    .size(heroImageSize)
+                                    //Distancia entre la imagen y top
+                                    .offset(y = 10.dp)
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun HeroDetailTopSection(
@@ -161,45 +169,40 @@ fun HeroDetailTopSection(
     onToogleAction: () -> Unit,
     isFavorite: Boolean
 ) {
-    Box(
-        contentAlignment = Alignment.TopEnd,
+    Row(
         modifier = modifier
-            .background(Brush.verticalGradient(
-                listOf(
-                    Color.Black,
-                    Color.Transparent
-                )
-            ))
-    ){
-        IconButton(onClick = onToogleAction, Modifier.size(55.dp)) {
+            .fillMaxWidth()
+            .padding(horizontal = 5.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Flecha para ir atrás
+        IconButton(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier.size(70.dp)
+        ) {
             Icon(
-                imageVector = Icons.Filled.Star,
-                contentDescription = null,
-                tint = if (isFavorite) Color.Yellow else Color.White,
-                modifier = Modifier
-                    .size(55.dp)
-                    .padding(top = 16.dp, end = 16.dp)
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White,
+                modifier = Modifier.size(45.dp)
             )
         }
-
-    }
-    Box(
-        contentAlignment = Alignment.TopStart
-    ){
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier
-                .size(36.dp)
-                //Margen para el icono de la flecha
-                .offset(16.dp, 16.dp)
-                .clickable {
-                    navController.popBackStack()
-                }
-        )
+        // Estrella de favoritos
+        IconButton(
+            onClick = onToogleAction,
+            modifier = Modifier.size(70.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = "Favorite",
+                tint = if (isFavorite) Color.Yellow else Color.White,
+                modifier = Modifier.size(45.dp)
+            )
+        }
     }
 }
+
 
 @Composable
 fun HeroDetailStateWrapper(
