@@ -37,12 +37,17 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +65,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -78,48 +84,75 @@ import com.example.heroapp.domain.model.Hero
 import com.example.heroapp.util.HeroParse
 import timber.log.Timber
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeroDetailScreen(
     dominantColor: Color,
     navController: NavController,
-    topPadding: Dp = 70.dp,
-    heroImageSize: Dp = 200.dp,
+    heroImageSize: Dp = 180.dp,
     viewModel: HeroDetailViewModel = hiltViewModel()
 ){
     val isFavorite by viewModel.isFavorite.collectAsState()
     val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
         value = viewModel.getHeroInfo(viewModel.heroId)
     }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            heroInfoResult?.getOrNull()?.let {
-                HeroDetailTopSection(
-                    navController = navController,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    isFavorite = isFavorite,
-                    onToogleAction =
+            Column {
+                MediumTopAppBar(
                     {
-                        if (isFavorite){
-                            viewModel.deleteFavoriteHero(it.id)
-                            Timber.d("Heroe eliminado")
-                        } else {
-                            viewModel.saveFavoriteHero(it.id, it.name, it.image)
-                            Timber.d("Heroe guardado")
+                        heroInfoResult?.getOrNull()?.let {
+                            HeroDetailTopSection(
+                                navController = navController,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp),
+                                isFavorite = isFavorite,
+                                onToogleAction =
+                                {
+                                    if (isFavorite){
+                                        viewModel.deleteFavoriteHero(it.id)
+                                        Timber.d("Heroe eliminado")
+                                    } else {
+                                        viewModel.saveFavoriteHero(it.id, it.name, it.image)
+                                        Timber.d("Heroe guardado")
 
+                                    }
+                                }
+                            )
                         }
-                    }
+                        Box(contentAlignment = Alignment.TopCenter,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            heroInfoResult?.let { result ->
+                                if (result.isSuccess) {
+                                    val hero = result.getOrThrow()
+                                    AsyncImage(
+                                        model = hero.image,
+                                        contentDescription = hero.name,
+                                        modifier = Modifier
+                                            .size(heroImageSize)
+                                            //Distancia entre la imagen y top
+                                            .padding(top = 10.dp)
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    scrollBehavior = scrollBehavior
                 )
             }
+
 
         }
     ) {innerPading ->
         Box(modifier = Modifier
-            .fillMaxSize()
             .background(dominantColor)
             .padding(innerPading)
+            .offset(y = ((-90).dp))
         ){
             heroInfoResult?.let { result ->
                 HeroDetailStateWrapper(
@@ -127,35 +160,18 @@ fun HeroDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(
-                            top = topPadding + heroImageSize / 4f,
+                            top = 16.dp,
                             start = 16.dp,
                             end = 16.dp,
-                            bottom = 16.dp
                         )
                         .shadow(10.dp, RoundedCornerShape(10.dp))
                         .clip(RoundedCornerShape(10.dp))
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(16.dp)
-                        .align(Alignment.BottomCenter)
+                        .align(Alignment.Center)
+
                 )
-                Box(contentAlignment = Alignment.TopCenter,
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    heroInfoResult?.let { result ->
-                        if (result.isSuccess) {
-                            val hero = result.getOrThrow()
-                            AsyncImage(
-                                model = hero.image,
-                                contentDescription = hero.name,
-                                modifier = Modifier
-                                    .size(heroImageSize)
-                                    //Distancia entre la imagen y top
-                                    .offset(y = 10.dp)
-                            )
-                        }
-                    }
-                }
+
             }
         }
     }
@@ -213,7 +229,6 @@ fun HeroDetailStateWrapper(
         HeroDetailSection(
             heroInfo =  heroInfo.getOrThrow(),
             modifier = modifier
-                .offset(y = (-20).dp)
         )
     } else if (heroInfo.isFailure){
         Text(text = "Error fetching hero data. Please try again later.")
@@ -232,10 +247,8 @@ fun HeroDetailSection(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .fillMaxSize()
-            //Fallo
-            .offset(y = (-10).dp)
             .verticalScroll(scrollState)
-            .padding(top = 120.dp)
+            .padding(top = 77.dp)
     ) {
         Text(
             text = firstCharCap(heroInfo.name),
@@ -249,9 +262,11 @@ fun HeroDetailSection(
             heroWeight = heroInfo.appearance.weight[1],
             heroHeight = heroInfo.appearance.height[1]
         )
-        HeroBiography(biography = heroInfo.biography)
-        Spacer(modifier = Modifier.height(16.dp))
         HeroBaseStats(powerstat = heroInfo.powerstats, heroParse = HeroParse())
+        Spacer(modifier = Modifier.height(16.dp))
+        HeroBiography(biography = heroInfo.biography)
+
+
 
     }
 }
