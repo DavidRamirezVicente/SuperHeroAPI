@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                                 NavigationBarItem(
                                     icon = {
                                         when(index) {
-                                            0->
+                                            0 ->
                                             Icon(
                                                 if (currentRoute == "hero_list_screen") item.selectedIcon else item.unselectedIcon,
                                                 contentDescription = null

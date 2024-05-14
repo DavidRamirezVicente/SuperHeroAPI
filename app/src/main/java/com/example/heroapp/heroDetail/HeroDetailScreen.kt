@@ -1,8 +1,6 @@
 package com.example.heroapp.heroDetail
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -11,7 +9,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,21 +23,26 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
-import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,14 +56,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,146 +74,133 @@ import com.example.heroapp.data.remote.responses.Biography
 import com.example.heroapp.data.remote.responses.Powerstats
 import com.example.heroapp.domain.model.Hero
 import com.example.heroapp.util.HeroParse
-import timber.log.Timber
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeroDetailScreen(
     dominantColor: Color,
     navController: NavController,
-    topPadding: Dp = 70.dp,
-    heroImageSize: Dp = 200.dp,
+    heroImageSize: Dp = 180.dp,
     viewModel: HeroDetailViewModel = hiltViewModel()
-){
+) {
     val isFavorite by viewModel.isFavorite.collectAsState()
     val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
         value = viewModel.getHeroInfo(viewModel.heroId)
     }
-    //Column
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(dominantColor)
-        .padding(bottom = 16.dp)
-    ){
-        heroInfoResult?.getOrNull()?.let {
-            HeroDetailTopSection(
-                navController = navController,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    //.fillMaxHeight(1f)
-                    .align(Alignment.TopCenter),
-                isFavorite = isFavorite,
-                onToogleAction =
-                {
-                    if (isFavorite){
-                        viewModel.deleteFavoriteHero(it.id)
-                        Timber.d("Heroe eliminado")
-                    } else {
-                        viewModel.saveFavoriteHero(it.id, it.name, it.image)
-                        Timber.d("Heroe guardado")
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
-                    }
-                }
-            )
-        }
-        heroInfoResult?.let { result ->
-            HeroDetailStateWrapper(
-                heroInfo = result,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = topPadding + heroImageSize / 2f,
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = 16.dp
-                    )
-                    .shadow(10.dp, RoundedCornerShape(10.dp))
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(16.dp)
-                    .align(Alignment.BottomCenter)
-            )
-        }
-        Box(contentAlignment = Alignment.TopCenter,
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            heroInfoResult?.let { result ->
-                if (result.isSuccess) {
-                    val hero = result.getOrThrow()
-                    AsyncImage(
-                        model = hero.image,
-                        contentDescription = hero.name,
-                        modifier = Modifier
-                            .size(heroImageSize)
-                            //Distancia entre la imagen y top
-                            .offset(y = topPadding)
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            Column {
+                heroInfoResult?.getOrNull()?.let {
+                    CenterAlignedTopAppBar(
+                        modifier = Modifier.padding(top = 10.dp),
+                        title = { Text(text = "") },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(imageVector = Icons.Filled.ArrowBack,
+                                    contentDescription = "Go back",
+                                    modifier = Modifier.size(45.dp))
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = {
+                                if (isFavorite){
+                                    viewModel.deleteFavoriteHero(it.id)
+                                }else{
+                                    viewModel.saveFavoriteHero(it.id, it.name, it.image)
+                                }
+                            }) {
+                                Icon(imageVector = Icons.Filled.Star,
+                                    contentDescription = "Favorite",
+                                    tint = if (isFavorite) Color.Yellow else Color.White,
+                                    modifier = Modifier.size(45.dp)
+                                )
+                            }
+                        },
+                        scrollBehavior = scrollBehavior,
+                        colors = TopAppBarColors(
+                            dominantColor,
+                            dominantColor,
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.surface
+                        ),
+
                     )
                 }
             }
-        }
-    }
-}
 
-@Composable
-fun HeroDetailTopSection(
-    navController: NavController,
-    modifier: Modifier = Modifier,
-    onToogleAction: () -> Unit,
-    isFavorite: Boolean
-) {
-    Box(
-        contentAlignment = Alignment.TopEnd,
-        modifier = modifier
-            .background(Brush.verticalGradient(
-                listOf(
-                    Color.Black,
-                    Color.Transparent
-                )
-            ))
-    ){
-        IconButton(onClick = onToogleAction, Modifier.size(55.dp)) {
-            Icon(
-                imageVector = Icons.Filled.Star,
-                contentDescription = null,
-                tint = if (isFavorite) Color.Yellow else Color.White,
-                modifier = Modifier
-                    .size(55.dp)
-                    .padding(top = 16.dp, end = 16.dp)
-            )
         }
-
-    }
-    Box(
-        contentAlignment = Alignment.TopStart
-    ){
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = null,
-            tint = Color.White,
+    ) { innerPading ->
+        Column(
             modifier = Modifier
-                .size(36.dp)
-                //Margen para el icono de la flecha
-                .offset(16.dp, 16.dp)
-                .clickable {
-                    navController.popBackStack()
+                .background(dominantColor)
+                .padding(innerPading)
+                //.offset(y = -(heroImageSize/2))
+        ) {
+                heroInfoResult?.let { result ->
+                    HeroDetailStateWrapper(
+                        heroInfo = result,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = 16.dp,
+                                start = 16.dp,
+                                end = 16.dp,
+                                bottom = 16.dp
+                            )
+                            .shadow(10.dp, RoundedCornerShape(10.dp))
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(16.dp)
+                    )
                 }
-        )
+        }
+
     }
 }
-
 @Composable
 fun HeroDetailStateWrapper(
     heroInfo: Result<Hero>,
     modifier: Modifier = Modifier,
-){
-    if (heroInfo.isSuccess){
-        HeroDetailSection(
-            heroInfo =  heroInfo.getOrThrow(),
-            modifier = modifier
-                .offset(y = (-20).dp)
-        )
-    } else if (heroInfo.isFailure){
-        Text(text = "Error fetching hero data. Please try again later.")
+) {
+    LazyColumn(
+        modifier = Modifier
+            .padding(
+                top = 16.dp,
+                start = 16.dp,
+                end = 16.dp,
+                bottom = 16.dp
+            )
+            .shadow(10.dp, RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
+    ) {
+        item {
+            heroInfo.getOrNull().let {
+                if (it != null) {
+                    AsyncImage(
+                        model = it.image,
+                        contentDescription = it.name,
+                        modifier = Modifier
+                            .height(180.dp)
+                            .fillMaxWidth()
+                    )
+                }
+            }
+            if (heroInfo.isSuccess) {
+                HeroDetailSection(
+                    heroInfo = heroInfo.getOrThrow(),
+                    modifier = modifier
+                )
+            } else if (heroInfo.isFailure) {
+                Text(text = "Error fetching hero data. Please try again later.")
+            }
+        }
     }
 }
 
@@ -222,48 +209,46 @@ fun HeroDetailStateWrapper(
 fun HeroDetailSection(
     heroInfo: Hero,
     modifier: Modifier = Modifier
-){
-    val scrollState = rememberScrollState()
+) {
+    //val scrollState = rememberScrollState()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .fillMaxSize()
-            //Fallo
-            .offset(y = (-10).dp)
-            .verticalScroll(scrollState)
-            .padding(top = 120.dp)
+            //.fillMaxSize()
+            //.verticalScroll(scrollState)
+            .padding(top = 77.dp)
     ) {
-        Text(
-            text = firstCharCap(heroInfo.name),
-            fontWeight = FontWeight.Bold,
-            fontSize = 30.sp,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        HeroRaceSection(info = heroInfo.appearance)
-        HeroDetailDataSection(
-            heroWeight = heroInfo.appearance.weight[1],
-            heroHeight = heroInfo.appearance.height[1]
-        )
-        HeroBiography(biography = heroInfo.biography)
-        Spacer(modifier = Modifier.height(16.dp))
-        HeroBaseStats(powerstat = heroInfo.powerstats, heroParse = HeroParse())
-
+            Text(
+                text = firstCharCap(heroInfo.name),
+                fontWeight = FontWeight.Bold,
+                fontSize = 30.sp,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            HeroRaceSection(info = heroInfo.appearance)
+            HeroDetailDataSection(
+                heroWeight = heroInfo.appearance.weight[1],
+                heroHeight = heroInfo.appearance.height[1]
+            )
+            HeroBaseStats(powerstat = heroInfo.powerstats, heroParse = HeroParse())
+            Spacer(modifier = Modifier.height(16.dp))
+            HeroBiography(biography = heroInfo.biography)
     }
 }
 
+
 @Composable
-fun HeroRaceSection(info: Appearance){
+fun HeroRaceSection(info: Appearance) {
     var race = info.race
-    if (race.equals("null")){
+    if (race.equals("null")) {
         race = "Unknown"
     }
     Row(
-        verticalAlignment =  Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .padding(16.dp)
-    ){
+    ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -272,7 +257,7 @@ fun HeroRaceSection(info: Appearance){
                 .background(MaterialTheme.colorScheme.primary)
                 .height(35.dp)
                 .weight(1f)
-        ){
+        ) {
             Text(
                 text = firstCharCap(race),
                 color = Color.White,
@@ -287,7 +272,7 @@ fun HeroDetailDataSection(
     heroWeight: String,
     heroHeight: String,
     sectionHeight: Dp = 80.dp
-){
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -299,9 +284,10 @@ fun HeroDetailDataSection(
             dataIcon = painterResource(id = R.drawable.weighticon),
             modifier = Modifier.weight(1f)
         )
-        Spacer(modifier = Modifier
-            .size(1.dp, sectionHeight)
-            .background(Color.LightGray)
+        Spacer(
+            modifier = Modifier
+                .size(1.dp, sectionHeight)
+                .background(Color.LightGray)
         )
         HeroDetailDataItem(
             dataValue = heroHeight,
@@ -318,15 +304,20 @@ fun HeroDetailDataItem(
     dataUnit: String,
     dataIcon: Painter,
     modifier: Modifier = Modifier
-){
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
-            .padding(16.dp
+            .padding(
+                16.dp
             )
     ) {
-        Icon(painter = dataIcon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
+        Icon(
+            painter = dataIcon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "$dataValue$dataUnit",
@@ -344,13 +335,13 @@ fun HeroStats(
     height: Dp = 28.dp,
     animDuration: Int = 1000,
     animDelay: Int = 0
-){
+) {
 
     var animationPlayed by remember {
         mutableStateOf(false)
     }
     val curPercent = animateFloatAsState(
-        targetValue = if (animationPlayed){
+        targetValue = if (animationPlayed) {
             if (statValue == "null") 0f else statValue.toInt() / statMaxValue.toFloat()
         } else 0f,
         animationSpec = tween(
@@ -373,7 +364,7 @@ fun HeroStats(
                 }
             )
             .clip(RoundedCornerShape(16.dp))
-    ){
+    ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -390,7 +381,8 @@ fun HeroStats(
             )
             Text(
                 text = (curPercent.value * statMaxValue).toInt().toString(),
-                fontWeight = FontWeight.Bold)
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -477,6 +469,7 @@ fun HeroBaseStats(
         }
     }
 }
+
 @Composable
 fun BiographyItem(
     title: String,
@@ -496,10 +489,11 @@ fun BiographyItem(
         )
     }
 }
+
 @Composable
 fun HeroBiography(
     biography: Biography
-){
+) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     Surface(
         color = MaterialTheme.colorScheme.secondaryContainer,
@@ -550,8 +544,18 @@ fun HeroBiography(
                     biography.fullName.let { BiographyItem(title = "Full Name:", value = it) }
                     biography.alterEgos?.let { BiographyItem(title = "AlterEgos:", value = it) }
                     BiographyItem(title = "Aliases:", value = biography.aliases.joinToString())
-                    biography.placeOfBirth?.let { BiographyItem(title = "Place of birth:", value = it) }
-                    biography.firstAppearance?.let { BiographyItem(title = "First Appearance:", value = it) }
+                    biography.placeOfBirth?.let {
+                        BiographyItem(
+                            title = "Place of birth:",
+                            value = it
+                        )
+                    }
+                    biography.firstAppearance?.let {
+                        BiographyItem(
+                            title = "First Appearance:",
+                            value = it
+                        )
+                    }
                     BiographyItem(title = "Publisher:", value = biography.publisher)
                     BiographyItem(title = "Alignment:", value = biography.alignment)
 

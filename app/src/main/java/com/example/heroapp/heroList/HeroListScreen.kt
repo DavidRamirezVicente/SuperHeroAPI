@@ -29,11 +29,14 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,6 +51,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -65,31 +69,32 @@ fun HeroListScreen(
     navController: NavController,
     viewModel: HeroListViewModel = hiltViewModel()
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primaryContainer)
-    ) {
-        Column() {
-            Spacer(modifier = Modifier.height(20.dp))
-            //TODO app logo
+    Scaffold(
+        topBar = {
             SearchBar(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(top = 30.dp, start = 15.dp, end = 15.dp)
             ) { newSearchTerm ->
                 if (newSearchTerm.isNotEmpty()) {
                     viewModel.loadHeroList(newSearchTerm)
                 } else {
                     Timber.d("Escribe el nombre de un superheroe")
                 }
-
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            HeroGrid(viewModel = viewModel, navController = navController)
         }
+    ) { innerPading ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(innerPading)
+            ) {
+                HeroGrid(viewModel = viewModel, navController = navController)
+            }
+        }
+
     }
-}
 
 @Composable
 fun SearchBar(
