@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,13 +37,18 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +66,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -78,130 +85,120 @@ import com.example.heroapp.domain.model.Hero
 import com.example.heroapp.util.HeroParse
 import timber.log.Timber
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeroDetailScreen(
     dominantColor: Color,
     navController: NavController,
-    topPadding: Dp = 70.dp,
-    heroImageSize: Dp = 200.dp,
+    heroImageSize: Dp = 180.dp,
     viewModel: HeroDetailViewModel = hiltViewModel()
-){
+) {
     val isFavorite by viewModel.isFavorite.collectAsState()
     val heroInfoResult by produceState<Result<Hero>?>(initialValue = null) {
         value = viewModel.getHeroInfo(viewModel.heroId)
     }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            heroInfoResult?.getOrNull()?.let {
-                HeroDetailTopSection(
-                    navController = navController,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    isFavorite = isFavorite,
-                    onToogleAction =
-                    {
-                        if (isFavorite){
-                            viewModel.deleteFavoriteHero(it.id)
-                            Timber.d("Heroe eliminado")
-                        } else {
-                            viewModel.saveFavoriteHero(it.id, it.name, it.image)
-                            Timber.d("Heroe guardado")
+            Column {
+                heroInfoResult?.getOrNull()?.let {
+                    CenterAlignedTopAppBar(
+                        modifier = Modifier.padding(top = 10.dp),
+                        title = { Text(text = "") },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(imageVector = Icons.Filled.ArrowBack,
+                                    contentDescription = "Go back",
+                                    modifier = Modifier.size(45.dp))
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = {
+                                if (isFavorite){
+                                    viewModel.deleteFavoriteHero(it.id)
+                                }else{
+                                    viewModel.saveFavoriteHero(it.id, it.name, it.image)
+                                }
+                            }) {
+                                Icon(imageVector = Icons.Filled.Star,
+                                    contentDescription = "Favorite",
+                                    tint = if (isFavorite) Color.Yellow else Color.White,
+                                    modifier = Modifier.size(45.dp)
+                                )
+                            }
+                        },
+                        scrollBehavior = scrollBehavior,
+                        colors = TopAppBarColors(
+                            dominantColor,
+                            dominantColor,
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.surface
+                        ),
 
-                        }
-                    }
-                )
+                        )
+                }
             }
 
         }
     ) {innerPading ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(dominantColor)
-            .padding(innerPading)
-        ){
-            heroInfoResult?.let { result ->
-                HeroDetailStateWrapper(
-                    heroInfo = result,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = topPadding + heroImageSize / 4f,
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = 16.dp
-                        )
-                        .shadow(10.dp, RoundedCornerShape(10.dp))
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp)
-                        .align(Alignment.BottomCenter)
-                )
-                Box(contentAlignment = Alignment.TopCenter,
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
+        LazyColumn {
+            item {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .background(dominantColor)
+                    .padding(innerPading)
+                ){
                     heroInfoResult?.let { result ->
-                        if (result.isSuccess) {
-                            val hero = result.getOrThrow()
-                            AsyncImage(
-                                model = hero.image,
-                                contentDescription = hero.name,
-                                modifier = Modifier
-                                    .size(heroImageSize)
-                                    //Distancia entre la imagen y top
-                                    .offset(y = 10.dp)
-                            )
+                        HeroDetailStateWrapper(
+                            heroInfo = result,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(
+                                    top = 100.dp,
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    bottom = 16.dp
+                                )
+                                .shadow(10.dp, RoundedCornerShape(10.dp))
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(
+                                    top = 60.dp,
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    bottom = 16.dp)
+                                .align(Alignment.BottomCenter)
+                        )
+                        Box(contentAlignment = Alignment.TopCenter,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            Box {
+                                    heroInfoResult?.let { result ->
+                                        if (result.isSuccess) {
+                                            val hero = result.getOrThrow()
+                                            AsyncImage(
+                                                model = hero.image,
+                                                contentDescription = hero.name,
+                                                modifier = Modifier
+                                                    .size(heroImageSize)
+                                                    .padding(10.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
                         }
                     }
                 }
             }
         }
-    }
-}
 
-
-@Composable
-fun HeroDetailTopSection(
-    navController: NavController,
-    modifier: Modifier = Modifier,
-    onToogleAction: () -> Unit,
-    isFavorite: Boolean
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 5.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Flecha para ir atrás
-        IconButton(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.size(70.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                tint = Color.White,
-                modifier = Modifier.size(45.dp)
-            )
-        }
-        // Estrella de favoritos
-        IconButton(
-            onClick = onToogleAction,
-            modifier = Modifier.size(70.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = "Favorite",
-                tint = if (isFavorite) Color.Yellow else Color.White,
-                modifier = Modifier.size(45.dp)
-            )
-        }
     }
-}
 
 
 @Composable
@@ -213,7 +210,7 @@ fun HeroDetailStateWrapper(
         HeroDetailSection(
             heroInfo =  heroInfo.getOrThrow(),
             modifier = modifier
-                .offset(y = (-20).dp)
+                .offset(y = (-70).dp)
         )
     } else if (heroInfo.isFailure){
         Text(text = "Error fetching hero data. Please try again later.")
@@ -226,15 +223,11 @@ fun HeroDetailSection(
     heroInfo: Hero,
     modifier: Modifier = Modifier
 ){
-    val scrollState = rememberScrollState()
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .fillMaxSize()
-            //Fallo
-            .offset(y = (-10).dp)
-            .verticalScroll(scrollState)
+            // .verticalScroll(scrollState)
             .padding(top = 120.dp)
     ) {
         Text(
@@ -249,10 +242,9 @@ fun HeroDetailSection(
             heroWeight = heroInfo.appearance.weight[1],
             heroHeight = heroInfo.appearance.height[1]
         )
-        HeroBiography(biography = heroInfo.biography)
-        Spacer(modifier = Modifier.height(16.dp))
         HeroBaseStats(powerstat = heroInfo.powerstats, heroParse = HeroParse())
-
+        Spacer(modifier = Modifier.height(16.dp))
+        HeroBiography(biography = heroInfo.biography)
     }
 }
 

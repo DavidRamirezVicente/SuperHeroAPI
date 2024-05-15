@@ -70,8 +70,6 @@ class MainActivity : ComponentActivity() {
                         unselectedIcon = Icons.Outlined.Face
                     )
                 )
-
-                // Composable de la barra de navegación
                 Scaffold(
                     bottomBar = {
                         NavigationBar() {
