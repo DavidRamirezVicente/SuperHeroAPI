@@ -13,7 +13,6 @@ class HeroRepository @Inject constructor(
     private val heroService: HeroServices,
     private val dataBase: FavoriteHeroDatabase,
 ) {
-    // implementar DAO
     suspend fun getHeroesList(heroName: String): Result<List<Hero>> {
         return runCatching {
             val heroes = heroService.searchHeroByName(heroName)

@@ -21,22 +21,17 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -69,12 +64,13 @@ fun HeroListScreen(
     navController: NavController,
     viewModel: HeroListViewModel = hiltViewModel()
 ) {
+    val gradientColors = listOf(Color(0xFF243B55), Color(0xFF141E30))
     Scaffold(
         topBar = {
             SearchBar(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 30.dp, start = 15.dp, end = 15.dp)
+                    .padding(top = 30.dp, start = 15.dp, end = 15.dp),
             ) { newSearchTerm ->
                 if (newSearchTerm.isNotEmpty()) {
                     viewModel.loadHeroList(newSearchTerm)
@@ -87,10 +83,10 @@ fun HeroListScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .background(Brush.verticalGradient(gradientColors))
                     .padding(innerPading)
             ) {
-                HeroGrid(viewModel = viewModel, navController = navController)
+                HeroGrid(viewModel = viewModel, navController = navController, color = gradientColors)
             }
         }
 
@@ -99,9 +95,10 @@ fun HeroListScreen(
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    onSearch: (String) -> Unit = {}
+    onSearch: (String) -> Unit = {},
 ) {
     var text by remember { mutableStateOf("") }
+  //  val gradientColors = listOf(Color(0xFF8E2DE2), Color(0xFF4A00E0))
 
     Box(modifier = modifier) {
         TextField(
@@ -136,7 +133,7 @@ fun SearchBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(5.dp, CircleShape)
-                .background(Color.White, CircleShape)
+                .background(Color(0xFFB4B4B4))
                 .padding(horizontal = 20.dp, vertical = 12.dp)
                 .clip(RoundedCornerShape(30.dp))
         )
@@ -161,14 +158,7 @@ fun HeroEntry(
             .shadow(10.dp, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
             .aspectRatio(1f)
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        dominantColor,
-                        defaultDominantColor
-                    )
-                )
-            )
+            .background(Color(0xFF8F8F8F))
             .clickable {
                 navController.navigate(
                     "hero_detail_screen/${dominantColor.toArgb()}/${entry.id}"
@@ -212,6 +202,7 @@ fun HeroEntry(
 fun HeroGrid(
     viewModel: HeroListViewModel,
     navController: NavController,
+    color: List<Color>
 ) {
     val heroList = viewModel.heroList
     val isLoading = viewModel.isLoading
@@ -219,7 +210,7 @@ fun HeroGrid(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(Brush.verticalGradient(color))
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {

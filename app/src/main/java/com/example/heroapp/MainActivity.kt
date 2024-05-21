@@ -139,7 +139,6 @@ class MainActivity : ComponentActivity() {
                                 val color = it.arguments?.getInt("dominantColor")
                                 color?.let { Color(it) } ?: Color.White
                             }
-
                                 HeroDetailScreen(
                                     dominantColor = dominantColor,
                                     navController = navController

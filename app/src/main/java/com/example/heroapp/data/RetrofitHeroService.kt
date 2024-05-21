@@ -10,6 +10,7 @@ import com.example.heroapp.util.Constants
 class RetrofitHeroService(private val api: HeroApi) : HeroServices {
 
     override suspend fun searchHeroByName(name: String): List<Hero> {
+
         val apiKey = Constants.apiKey
         val heroResponse = api.getHeroList(apiKey,name)
         return heroResponse.heroList.map { HeroMapper.buildFrom(response = it) }

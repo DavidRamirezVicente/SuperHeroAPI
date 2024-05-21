@@ -58,4 +58,5 @@ object AppModule {
     fun provideHeroServices(api: HeroApi): HeroServices{
         return RetrofitHeroService(api)
     }
+
 }

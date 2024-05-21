@@ -38,7 +38,6 @@ class HeroListViewModel @Inject constructor(
         viewModelScope.launch {
             isLoading = true
             val result = repository.getHeroesList(heroName)
-
             result.onSuccess { heroes ->
                 heroList = heroes.map {
                     HeroListEntry(
@@ -47,7 +46,6 @@ class HeroListViewModel @Inject constructor(
                         imageUrl = it.image
                     )
                 }
-
             }
             result.onFailure { exception ->
                 Timber.tag("HeroListViewModel").e(exception, "Error loading hero list")
