@@ -1,5 +1,6 @@
 package com.example.heroapp.data.remote.responses
 
+import com.example.heroapp.domain.model.PowerStats
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 @Serializable
@@ -10,6 +11,6 @@ data class HeroItemResponse(
     val id: String,
     val image: @Contextual Image,
     val name: String,
-    val powerstats: @Contextual Powerstats,
+    val powerstats: @Contextual PowerStats,
     val work: @Contextual Work
 )

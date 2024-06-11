@@ -1,20 +1,17 @@
 package com.example.heroapp.di
 
-import android.content.Context
-import androidx.compose.ui.platform.LocalContext
-import com.example.heroapp.DatabaseModule
-import com.example.heroapp.HeroApplication
 import com.example.heroapp.data.RetrofitHeroService
 import com.example.heroapp.data.remote.HeroApi
 import com.example.heroapp.data.room.FavoriteHeroDatabase
 import com.example.heroapp.domain.HeroServices
 import com.example.heroapp.repository.HeroRepository
+import com.example.heroapp.repository.VSRepository
 import com.example.heroapp.util.Constants.BASE_URL
+import com.example.heroapp.util.StateMachine
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -34,6 +31,17 @@ object AppModule {
     @Provides
     fun provideHeroRepository(heroService: HeroServices, db: FavoriteHeroDatabase): HeroRepository {
         return HeroRepository(heroService, db)
+    }
+
+    @Singleton
+    @Provides
+    fun provideVSRepository(heroService: HeroServices, db: FavoriteHeroDatabase): VSRepository {
+        return VSRepository(heroService,db)
+    }
+
+    @Provides
+    fun provideStateMachine(): StateMachine{
+        return StateMachine()
     }
 
     /**

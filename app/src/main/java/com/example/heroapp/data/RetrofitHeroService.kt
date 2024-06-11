@@ -1,10 +1,11 @@
 package com.example.heroapp.data
 
 import com.example.heroapp.data.remote.HeroApi
-import com.example.heroapp.data.remote.responses.HeroItemResponse
+import com.example.heroapp.data.remote.responses.PowerstatsResponse
 import com.example.heroapp.domain.HeroServices
 import com.example.heroapp.domain.mapper.HeroMapper
 import com.example.heroapp.domain.model.Hero
+import com.example.heroapp.domain.model.PowerStats
 import com.example.heroapp.util.Constants
 
 class RetrofitHeroService(private val api: HeroApi) : HeroServices {
@@ -21,4 +22,11 @@ class RetrofitHeroService(private val api: HeroApi) : HeroServices {
         val heroResponse = api.getHeroDetails(apiKey, heroId)
         return HeroMapper.buildFrom(heroResponse)
     }
+
+    override suspend fun getHeroPowerStats(heroId: String): PowerStats {
+        val apiKey = Constants.apiKey
+        val powerStatResponse = api.getPowerStats(apiKey, heroId)
+        return HeroMapper.mapPowerStats(powerStatResponse)
+    }
+
 }

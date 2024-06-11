@@ -98,8 +98,6 @@ fun SearchBar(
     onSearch: (String) -> Unit = {},
 ) {
     var text by remember { mutableStateOf("") }
-  //  val gradientColors = listOf(Color(0xFF8E2DE2), Color(0xFF4A00E0))
-
     Box(modifier = modifier) {
         TextField(
             value = text,

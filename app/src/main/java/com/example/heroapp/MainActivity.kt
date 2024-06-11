@@ -3,6 +3,7 @@ package com.example.heroapp
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -39,7 +40,10 @@ import com.example.heroapp.favoriteHeroes.FavoriteHeroListScreen
 import com.example.heroapp.heroDetail.HeroDetailScreen
 import com.example.heroapp.heroList.HeroListScreen
 import com.example.heroapp.ui.theme.HeroAppTheme
+import com.example.heroapp.vsHero.VsScreen
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
+
 data class BottomNavigationItem(
     val title: String,
     val selectedIcon: ImageVector,
@@ -148,6 +152,7 @@ class MainActivity : ComponentActivity() {
                             FavoriteHeroListScreen(navController = navController)
                         }
                         composable("versus") {
+                            VsScreen(navController = navController)
                         }
                     }
                 }

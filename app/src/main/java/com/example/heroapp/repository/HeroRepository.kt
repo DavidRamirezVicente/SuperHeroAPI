@@ -1,9 +1,11 @@
 package com.example.heroapp.repository
 
+import com.example.heroapp.data.remote.responses.PowerstatsResponse
 import com.example.heroapp.data.room.FavoriteHero
 import com.example.heroapp.data.room.FavoriteHeroDatabase
 import com.example.heroapp.domain.HeroServices
 import com.example.heroapp.domain.model.Hero
+import com.example.heroapp.domain.model.PowerStats
 import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
