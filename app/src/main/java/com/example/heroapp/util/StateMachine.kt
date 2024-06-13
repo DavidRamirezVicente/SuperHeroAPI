@@ -52,12 +52,11 @@ class StateMachine : FlowReduxStateMachine<VSStates, VSActions>(initialState = V
             }
             inState<VSStates.RollingDice> {
                 on<VSActions.PickRandomCategory> { _, state ->
-                    delay(2000)
+                    delay(1500)
                     state.override { VSStates.Battling(firstContestant = firstContestant , secondContestant = secondContestant , 0,0, emptyList()) }
                 }
             }
             inState<VSStates.Battling> {
-
                 on<VSActions.StartBattle> { _, state ->
                     state.override { VSStates.RollingDice(state.snapshot.firstContestant, state.snapshot.secondContestant) }
                 }

@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.heroapp.data.room.FavoriteHero
+import com.example.heroapp.domain.VSStates
 import com.example.heroapp.heroList.SearchBar
 import timber.log.Timber
 
@@ -48,6 +49,7 @@ fun SearchFavScreen(
     ) {
     val gradientColors = listOf(Color(0xFF243B55), Color(0xFF141E30))
     val favHeroList by vsViewModel.allFavoriteHeroes.collectAsState(initial = emptyList())
+    val currentState by vsViewModel.state.collectAsState()
 
     Scaffold(
         topBar = {
@@ -71,7 +73,7 @@ fun SearchFavScreen(
                 .padding(innerPading)
 
         ) {
-            HeroGrid(heroList = favHeroList, navController = navController, viewModel = vsViewModel, color = gradientColors)
+            HeroGrid(heroList = favHeroList, navController = navController, state = currentState, color = gradientColors)
         }
     }
 }
@@ -130,10 +132,13 @@ fun HeroEntry(
 fun HeroGrid(
     heroList: List<FavoriteHero>,
     navController: NavController,
-    viewModel: VsViewModel,
+    state: VSStates,
     color: List<Color>
 ) {
-    val slotId by viewModel.slotId.collectAsState()
+    val slotId = when(state){
+        is VSStates.SettingUpSearch -> state.slotId
+        else -> 1
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -148,7 +153,7 @@ fun HeroGrid(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(heroList) { heroEntry ->
-                HeroEntry(entry = heroEntry, navController = navController, viewModel = viewModel, slotId = slotId)
+                HeroEntry(entry = heroEntry, navController = navController,  slotId = slotId)
             }
         }
     }

@@ -29,16 +29,18 @@ sealed class VSStates {
         val rounds: List<RoundResult>
     ) : VSStates()
 
-    /*data class CategoryPick(
-        val category: PowerStats
-    ) : VSStates()*/
+    data class RoundResult(
+        val category: Int,
+        val statValue1: Int,
+        val statValue2: Int
+    )
     data class RollingDice(
         val firstContestant: FavoriteHero,
         val secondContestant: FavoriteHero,
     ) : VSStates()
 }
-data class RoundResult(
-    val categoryId: String,
-    val statValue1: Int,
-    val statValue2: Int
-)
+
+
+/*data class CategoryPick(
+     val category: PowerStats
+ ) : VSStates()*/

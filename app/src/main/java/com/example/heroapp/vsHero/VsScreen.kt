@@ -1,13 +1,7 @@
 package com.example.heroapp.vsHero
 
-import android.graphics.drawable.Drawable
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,21 +10,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -40,13 +32,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -57,16 +47,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.heroapp.R
 import com.example.heroapp.data.room.FavoriteHero
 import com.example.heroapp.domain.VSStates
-import com.example.heroapp.domain.model.PowerStats
 import com.example.heroapp.ui.theme.HeroAppTheme
-import com.example.heroapp.util.HeroParse
-import kotlin.math.absoluteValue
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun VsScreen(
@@ -77,12 +67,21 @@ fun VsScreen(
 
     when (state) {
         is VSStates.NoActiveMatch -> NoActiveMatchScreen { viewModel.startMatch() }
-        is VSStates.SettingUpMatch -> SettingUpMatchScreen(viewModel, state as VSStates.SettingUpMatch)
+        is VSStates.SettingUpMatch -> SettingUpMatchScreen(state as VSStates.SettingUpMatch)
         is VSStates.SettingUpSearch -> SearchFavScreen(navController)
-        is VSStates.SetupComplete -> SetUpCompleteScreen(viewModel = viewModel, state = state as VSStates.SetupComplete) {
+        is VSStates.SetupComplete -> SetUpCompleteScreen(state = state as VSStates.SetupComplete) {
+            viewModel.startFight()
         }
-        is VSStates.RollingDice -> RollingDiceScreen(viewModel = viewModel, state = state as VSStates.RollingDice)
-        is VSStates.Battling -> BattleScreen(viewModel = viewModel, state = state as VSStates.Battling)
+
+        is VSStates.RollingDice -> RollingDiceScreen(
+            viewModel = viewModel,
+            state = state as VSStates.RollingDice
+        )
+
+        is VSStates.Battling -> BattleScreen(
+            viewModel = viewModel,
+            state = state as VSStates.Battling
+        )
     }
 
 }
@@ -93,7 +92,7 @@ fun NoActiveMatchScreen(startMatch: () -> Unit) {
 }
 
 @Composable
-fun SettingUpMatchScreen(viewModel: VsViewModel, state: VSStates.SettingUpMatch) {
+fun SettingUpMatchScreen(state: VSStates.SettingUpMatch) {
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -111,87 +110,73 @@ fun SettingUpMatchScreen(viewModel: VsViewModel, state: VSStates.SettingUpMatch)
             textAlign = TextAlign.Center,
             fontSize = 50.sp,
             fontWeight = FontWeight.Bold,
-           modifier = Modifier.padding(bottom = 50.dp)
+            modifier = Modifier.padding(bottom = 50.dp)
         )
-        VSHeroSection(modifier = Modifier,state.firstContestant, state.secondContestant, viewModel)
+        VSHeroSection(modifier = Modifier, state.firstContestant, state.secondContestant)
     }
 }
 
 @Composable
-fun SetUpCompleteScreen(viewModel: VsViewModel, state: VSStates.SetupComplete, function: () -> Unit) {
-    Column(modifier = Modifier
-        .padding(bottom = 25.dp)
+fun SetUpCompleteScreen(state: VSStates.SetupComplete, onFightClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .padding(bottom = 25.dp)
     ) {
-        Column(modifier = Modifier
-            .padding(top = 50.dp)
+        Column(
+            modifier = Modifier
+                .padding(top = 50.dp)
         ) {
             VSHeroSection(
                 Modifier.padding(top = 50.dp),
                 firstHero = state.firstContestant,
                 secondHero = state.secondContestant,
-                viewModel = viewModel
             )
         }
-        FightButton(
-            Modifier
-                .fillMaxSize()
-        ) {
-            viewModel.startFight()
-        }
+        FightButton(Modifier.fillMaxSize(), onFightClick)
     }
 
 }
 
 
 @Composable
-fun RollingDiceScreen(modifier: Modifier = Modifier, viewModel: VsViewModel, state: VSStates.RollingDice) {
+fun RollingDiceScreen(viewModel: VsViewModel, state: VSStates.RollingDice) {
     val value by viewModel.diceResult.collectAsState()
-    val powerstatsMap = mapOf(
-        0 to "",
-        1 to "Combat",
-        2 to "Durability",
-        3 to "Intelligence",
-        4 to "Power",
-        5 to "Speed",
-        6 to "Strength"
-    )
-    val imageResource = when(value) {
-        1 -> R.drawable.dice_1
-        2 -> R.drawable.dice_2
-        3 -> R.drawable.dice_3
-        4 -> R.drawable.dice_4
-        5 -> R.drawable.dice_5
-        else -> R.drawable.dice_6
-    }
-    val powerstat = powerstatsMap[value]
+    val powerstat = viewModel.getPowerStat(value)
 
-    Column(modifier = Modifier
-        .padding(top = 50.dp)
-        .fillMaxSize(),
+    Column(
+        modifier = Modifier
+            .padding(top = 50.dp)
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top) {
-        Text(text = "Category: ", fontSize = 50.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-        Text(text = "$powerstat", fontSize = 30.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+        verticalArrangement = Arrangement.Top
+    ) {
+        Text(
+            text = "Category: ",
+            fontSize = 50.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = powerstat,
+            fontSize = 30.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center
+        )
     }
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(top = 300.dp),
         verticalArrangement = Arrangement.Center,
-         horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
             modifier = Modifier
                 .clickable {
                     viewModel.rollDice()
-                    viewModel.calculateScores(
-                        firstHero = state.firstContestant,
-                        secondHero = state.secondContestant
-                    )
                 },
-
-            painter = painterResource(imageResource),
-            contentDescription = viewModel.diceResult.toString()
+            painter = painterResource(viewModel.imageResource(value)),
+            contentDescription = null
         )
     }
 }
@@ -209,24 +194,22 @@ fun BScreenBody(modifier: Modifier = Modifier, onHeroSelect: (Int) -> Unit) {
 }
 
 @Composable
-fun BattleScreen(viewModel: VsViewModel, state: VSStates.Battling){
-    Column(modifier = Modifier
-        .padding(bottom = 25.dp)
+fun BattleScreen(viewModel: VsViewModel, state: VSStates.Battling) {
+    Column(
+        modifier = Modifier
+            .padding(bottom = 25.dp)
     ) {
-        Column(modifier = Modifier
-            .padding(top = 50.dp)
+        Column(
+            modifier = Modifier
+                .padding(top = 50.dp)
         ) {
             VSHeroSection(
                 Modifier.padding(top = 50.dp),
                 firstHero = state.firstContestant,
                 secondHero = state.secondContestant,
-                viewModel = viewModel
             )
         }
         ScoreSection(
-            modifier = Modifier,
-            firstHero = state.firstContestant,
-            secondHero = state.secondContestant,
             viewModel = viewModel
         )
         HeroVsStats(viewModel = viewModel)
@@ -241,7 +224,11 @@ fun BattleScreen(viewModel: VsViewModel, state: VSStates.Battling){
 }
 
 @Composable
-fun VSHeroSection(modifier: Modifier, firstHero: FavoriteHero?, secondHero: FavoriteHero?, viewModel: VsViewModel) {
+fun VSHeroSection(
+    modifier: Modifier = Modifier,
+    firstHero: FavoriteHero?,
+    secondHero: FavoriteHero?
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -252,7 +239,6 @@ fun VSHeroSection(modifier: Modifier, firstHero: FavoriteHero?, secondHero: Favo
                 .weight(1f)
                 .padding(start = 16.dp),
             entry = firstHero,
-            viewModel = viewModel,
             slotId = 1
         )
         Column(
@@ -271,38 +257,45 @@ fun VSHeroSection(modifier: Modifier, firstHero: FavoriteHero?, secondHero: Favo
                 .weight(1f)
                 .padding(end = 16.dp),
             entry = secondHero,
-            viewModel = viewModel,
             slotId = 2
         )
     }
 }
 
 @Composable
-fun ScoreSection(modifier: Modifier, firstHero: FavoriteHero?, secondHero: FavoriteHero?, viewModel: VsViewModel) {
-    val score1 by viewModel.hero1Score.collectAsState()
-    val score2 by viewModel.hero2Score.collectAsState()
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        ScoreCard(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 16.dp),
-            score = score1
-        )
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp)
+fun ScoreSection(viewModel: VsViewModel) {
+    val state by viewModel.state.collectAsState()
+
+    if (state is VSStates.Battling){
+        val winsFirstContestant = (state as VSStates.Battling).winsFirstContestant
+        val winsSecondContestant = (state as VSStates.Battling).winsSecondContestant
+        Timber.d("$winsFirstContestant, $winsSecondContestant")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
+            ScoreCard(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 16.dp),
+                score = winsFirstContestant
+            )
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
+
+            }
+            ScoreCard(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 16.dp),
+                score = winsSecondContestant
+            )
         }
-        ScoreCard(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 16.dp),
-            score = score2
-        )
     }
+
+
 }
 
 @Composable
@@ -329,9 +322,10 @@ fun BeginButton(onClick: () -> Unit) {
 fun HeroCard(
     entry: FavoriteHero?,
     modifier: Modifier = Modifier,
-    viewModel: VsViewModel,
     slotId: Int
 ) {
+    val viewModel: VsViewModel = hiltViewModel()
+
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.Start
@@ -407,22 +401,22 @@ fun ScoreCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                    Text(
-                        text = score.toString(),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                    )
-                }
+                Text(
+                    text = score.toString(),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                )
             }
         }
     }
+}
 
 @Composable
-fun FightButton(modifier: Modifier, startFight: ()-> Unit) {
+fun FightButton(modifier: Modifier = Modifier, startFight: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Bottom,
@@ -438,7 +432,6 @@ fun FightButton(modifier: Modifier, startFight: ()-> Unit) {
 
     }
 }
-
 
 
 @Composable
@@ -515,66 +508,54 @@ fun HeroVsStats(
     animDelayPerItem: Int = 100,
     viewModel: VsViewModel
 ) {
-    val diceValue = viewModel.diceResult.collectAsState().value
-    val imageResource = when(diceValue) {
-        1 -> R.drawable.fist_removebg_preview
-        2 -> R.drawable.yunke
-        3 -> R.drawable.intelligence_removebg_preview
-        4 -> R.drawable.power_removebg_preview
-        5 -> R.drawable.speed_removebg_preview
-        else -> R.drawable.strength_removebg_preview
-    }
-    val hero1 by viewModel.firstHeroStatValue.collectAsState()
-    val hero2 by viewModel.secondHeroStatValue.collectAsState()
-    val maxBaseStat = 100
+    val state by viewModel.state.collectAsState()
 
     Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
+        color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 24.dp, end = 24.dp, bottom = 30.dp)
+            .padding(horizontal = 24.dp, vertical = 16.dp)
             .clip(RoundedCornerShape(16.dp))
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            item{
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
+        when (val currentState = state) {
+            is VSStates.Battling -> {
+                val rounds = currentState.rounds
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Text(
-                        text = "Rounds",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                    item {
+                        Text(
+                            text = "Rounds",
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp)
+                        )
+                    }
 
-                        ),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(30.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                    ) {
-                            HeroStats(
-                                statIcon = imageResource,
-                                firstHeroStatValue = hero1 ,
-                                secondHeroStatValue = hero2,
-                                statMaxValue = maxBaseStat,
-                                animDelay = animDelayPerItem
-                            )
-
-                        }
+                    itemsIndexed(rounds) { index, round ->
+                        HeroStats(
+                            statIcon = round.category,
+                            firstHeroStatValue = round.statValue1,
+                            secondHeroStatValue = round.statValue2,
+                            statMaxValue = 100,
+                            animDelay = index * animDelayPerItem
+                        )
                     }
                 }
             }
-
+            else -> {
+                Text(
+                    text = "No active battle",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         }
     }
+}
 
 
 
