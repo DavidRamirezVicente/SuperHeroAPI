@@ -9,6 +9,6 @@ sealed interface VSActions {
     data class SelectParticipant(val hero: FavoriteHero, val slotId: Int) : VSActions
     data class UpdatedSearch(val text: String, val list: Flow<List<FavoriteHero?>>): VSActions
     data object StartBattle : VSActions
-    data object PickRandomCategory : VSActions
+    data class SetRoundResult(val category: Int, val statValue1: Int, val statValue2: Int) : VSActions
     data object CompleteSetup : VSActions
 }

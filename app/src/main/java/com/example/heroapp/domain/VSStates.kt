@@ -35,6 +35,7 @@ sealed class VSStates {
         val statValue2: Int
     )
     data class RollingDice(
+        val previousState: Battling,
         val firstContestant: FavoriteHero,
         val secondContestant: FavoriteHero,
     ) : VSStates()

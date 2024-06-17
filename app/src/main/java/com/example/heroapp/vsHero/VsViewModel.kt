@@ -12,9 +12,13 @@ import com.example.heroapp.repository.VSRepository
 import com.example.heroapp.util.StateMachine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -28,10 +32,17 @@ class VsViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    val allFavoriteHeroes: Flow<List<FavoriteHero>> = heroRepository.allFavorites
+    val state = MutableStateFlow<VSStates>(VSStates.NoActiveMatch)
 
-    private val _state = MutableStateFlow<VSStates>(VSStates.NoActiveMatch)
-    val state: StateFlow<VSStates> get() = _state
+    init {
+        viewModelScope.launch {
+            stateMachine.state.collect { newState ->
+                state.value = newState
+            }
+        }
+    }
+
+    val allFavoriteHeroes: Flow<List<FavoriteHero>> = heroRepository.allFavorites
 
     private val _diceResult = MutableStateFlow(0)
     val diceResult: StateFlow<Int> get() = _diceResult
@@ -39,49 +50,37 @@ class VsViewModel @Inject constructor(
     private var winsFirst = 0
     private var winsSecond = 0
 
+
     private val roundResults = mutableListOf<VSStates.RoundResult>()
-
-
-    init {
-        observeStateMachine()
-    }
-
-    private fun observeStateMachine() {
-        viewModelScope.launch {
-            stateMachine.state.collect { newState ->
-                _state.value = newState
-            }
-        }
-    }
 
     fun startMatch() {
         viewModelScope.launch {
-            stateMachine.dispatch(VSActions.Begin)
+            dispatch(VSActions.Begin)
         }
     }
 
     fun onCellSelect(slotId: Int) {
         viewModelScope.launch {
-            stateMachine.dispatch(VSActions.SearchParticipant(slotId))
+            dispatch(VSActions.SearchParticipant(slotId))
         }
     }
 
     fun searchParticipants(query: String) {
         viewModelScope.launch {
             val heroesFlow = vsRepository.searchHeroes(query)
-            stateMachine.dispatch(VSActions.UpdatedSearch(query, heroesFlow))
+            dispatch(VSActions.UpdatedSearch(query, heroesFlow))
         }
     }
 
     fun selectParticipant(hero: FavoriteHero, slotId: Int) {
         viewModelScope.launch {
-            stateMachine.dispatch(VSActions.SelectParticipant(hero, slotId))
+            dispatch(VSActions.SelectParticipant(hero, slotId))
         }
     }
 
     fun startFight() {
         viewModelScope.launch {
-            stateMachine.dispatch(VSActions.StartBattle)
+            dispatch(VSActions.StartBattle)
         }
     }
 
@@ -90,8 +89,7 @@ class VsViewModel @Inject constructor(
         viewModelScope.launch {
             Timber.d("Dado")
             calculateScores()
-            stateMachine.dispatch(VSActions.PickRandomCategory)
-
+            delay(1000)
         }
     }
 
@@ -118,7 +116,7 @@ class VsViewModel @Inject constructor(
         }
     }
 
-    suspend fun loadPowerStatValue(heroId: String, category: String): Int? {
+    private suspend fun loadPowerStatValue(heroId: String, category: String): Int? {
         return withContext(Dispatchers.IO) {
             var powerStatValue: Int? = null
             val result = vsRepository.getHeroPowerStats(heroId)
@@ -139,7 +137,7 @@ class VsViewModel @Inject constructor(
         }
     }
 
-    suspend fun calculateScores() {
+    private suspend fun calculateScores() {
         Timber.d("Calculate Scores")
         val currentState = state.value
         if (currentState is VSStates.RollingDice) {
@@ -154,19 +152,19 @@ class VsViewModel @Inject constructor(
                 else -> R.drawable.strength_removebg_preview
             }
 
-            val firstHeroStatValue = loadPowerStatValue(currentState.firstContestant.id, category) ?: 0
-            val secondHeroStatValue = loadPowerStatValue(currentState.secondContestant.id, category) ?: 0
+            val firstHeroStatValue =  loadPowerStatValue(currentState.firstContestant.id, category) ?: 0
+            val secondHeroStatValue =  loadPowerStatValue(currentState.secondContestant.id, category) ?: 0
 
             if (firstHeroStatValue > secondHeroStatValue) {
                 winsFirst++
-                Timber.d("First wins")
+                Timber.d("Heroe1 gana")
             } else if (firstHeroStatValue < secondHeroStatValue) {
                 winsSecond++
-                Timber.d("Second wins")
+                Timber.d("Heroe2 gana")
             } else {
                 winsFirst++
                 winsSecond++
-                Timber.d("Draw")
+                Timber.d("Empate")
             }
 
             val roundResult = VSStates.RoundResult(
@@ -174,20 +172,35 @@ class VsViewModel @Inject constructor(
                 statValue1 = firstHeroStatValue,
                 statValue2 = secondHeroStatValue
             )
+            Timber.d("Resultados: $roundResult")
             roundResults.add(roundResult)
+
             val battlingState = VSStates.Battling(
                 firstContestant = currentState.firstContestant,
-                secondContestant = currentState.secondContestant,
+                secondContestant =  currentState.secondContestant,
                 winsFirstContestant = winsFirst,
                 winsSecondContestant = winsSecond,
                 rounds = roundResults.toList()
             )
-            _state.value = battlingState
+            dispatch(
+                VSActions.SetRoundResult(
+                    imageResource,
+                    firstHeroStatValue,
+                    secondHeroStatValue
+                )
+            )
+            state.value = battlingState
         }
 
+    }
 
+    fun dispatch(action: VSActions) {
+        viewModelScope.launch {
+            stateMachine.dispatch(action)
+        }
     }
 }
+
 
 
 

@@ -47,20 +47,45 @@ class StateMachine : FlowReduxStateMachine<VSStates, VSActions>(initialState = V
             }
             inState<VSStates.SetupComplete> {
                 on<VSActions.StartBattle> { _, state ->
-                    state.override { VSStates.RollingDice(state.snapshot.firstContestant, state.snapshot.secondContestant) }
+                    val battling = VSStates.Battling(firstContestant = state.snapshot.firstContestant,
+                        secondContestant = state.snapshot.secondContestant, 0,0, emptyList())
+                    state.override { VSStates.RollingDice(battling,state.snapshot.firstContestant, state.snapshot.secondContestant) }
                 }
             }
             inState<VSStates.RollingDice> {
-                on<VSActions.PickRandomCategory> { _, state ->
-                    delay(1500)
-                    state.override { VSStates.Battling(firstContestant = firstContestant , secondContestant = secondContestant , 0,0, emptyList()) }
+                on<VSActions.SetRoundResult> { action, state ->
+                    val roundResult = VSStates.RoundResult(
+                        category = action.category,
+                        statValue1 = action.statValue1,
+                        statValue2 = action.statValue2
+                    )
+                    val updatedRounds = state.snapshot.previousState.rounds.toMutableList().apply{
+                        add(roundResult)
+                    }
+                    state.override {
+                        VSStates.Battling(
+                            firstContestant = state.snapshot.firstContestant,
+                            secondContestant = state.snapshot.secondContestant,
+                            winsFirstContestant = state.snapshot.previousState.winsFirstContestant,
+                            winsSecondContestant = state.snapshot.previousState.winsSecondContestant,
+                            rounds = updatedRounds
+                        )
+                    }
                 }
             }
+
             inState<VSStates.Battling> {
                 on<VSActions.StartBattle> { _, state ->
-                    state.override { VSStates.RollingDice(state.snapshot.firstContestant, state.snapshot.secondContestant) }
+                    state.override {
+                        VSStates.RollingDice(
+                            previousState = state.snapshot,
+                            firstContestant = state.snapshot.firstContestant,
+                            secondContestant = state.snapshot.secondContestant
+                        )
+                    }
                 }
             }
+
         }
     }
     private fun updateContestantSelection(

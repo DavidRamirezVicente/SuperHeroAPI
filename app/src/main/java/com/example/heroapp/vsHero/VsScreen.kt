@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,15 +48,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.example.heroapp.R
 import com.example.heroapp.data.room.FavoriteHero
 import com.example.heroapp.domain.VSStates
 import com.example.heroapp.ui.theme.HeroAppTheme
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @Composable
@@ -210,9 +208,9 @@ fun BattleScreen(viewModel: VsViewModel, state: VSStates.Battling) {
             )
         }
         ScoreSection(
-            viewModel = viewModel
+            state
         )
-        HeroVsStats(viewModel = viewModel)
+        HeroVsStats(state = state)
         FightButton(
             Modifier
                 .fillMaxSize()
@@ -263,12 +261,9 @@ fun VSHeroSection(
 }
 
 @Composable
-fun ScoreSection(viewModel: VsViewModel) {
-    val state by viewModel.state.collectAsState()
-
-    if (state is VSStates.Battling){
-        val winsFirstContestant = (state as VSStates.Battling).winsFirstContestant
-        val winsSecondContestant = (state as VSStates.Battling).winsSecondContestant
+fun ScoreSection(state: VSStates.Battling) {
+        val winsFirstContestant = state.winsFirstContestant
+        val winsSecondContestant = state.winsSecondContestant
         Timber.d("$winsFirstContestant, $winsSecondContestant")
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -294,9 +289,6 @@ fun ScoreSection(viewModel: VsViewModel) {
             )
         }
     }
-
-
-}
 
 @Composable
 fun BeginButton(onClick: () -> Unit) {
@@ -506,10 +498,8 @@ fun HeroStats(
 @Composable
 fun HeroVsStats(
     animDelayPerItem: Int = 100,
-    viewModel: VsViewModel
+    state: VSStates.Battling
 ) {
-    val state by viewModel.state.collectAsState()
-
     Surface(
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier
@@ -517,9 +507,7 @@ fun HeroVsStats(
             .padding(horizontal = 24.dp, vertical = 16.dp)
             .clip(RoundedCornerShape(16.dp))
     ) {
-        when (val currentState = state) {
-            is VSStates.Battling -> {
-                val rounds = currentState.rounds
+                val rounds = state.rounds
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
@@ -546,16 +534,8 @@ fun HeroVsStats(
                     }
                 }
             }
-            else -> {
-                Text(
-                    text = "No active battle",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
-    }
-}
 
 
 
