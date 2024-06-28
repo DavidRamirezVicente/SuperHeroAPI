@@ -342,7 +342,7 @@ fun HeroStats(
     }
     val curPercent = animateFloatAsState(
         targetValue = if (animationPlayed) {
-            if (statValue.equals("null")) 0f else statValue.toInt() / statMaxValue.toFloat()
+            if (statValue == "null") 0f else statValue.toInt() / statMaxValue.toFloat()
         } else 0f,
         animationSpec = tween(
             animDuration,

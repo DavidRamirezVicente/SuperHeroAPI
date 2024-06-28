@@ -76,10 +76,9 @@ fun VsScreen(
             state = state as VSStates.RollingDice
         )
 
-        is VSStates.Battling -> BattleScreen(
-            viewModel = viewModel,
-            state = state as VSStates.Battling
-        )
+        is VSStates.Battling -> BattleScreen(state = state as VSStates.Battling) {
+            viewModel.startFight()
+        }
     }
 
 }
@@ -130,7 +129,7 @@ fun SetUpCompleteScreen(state: VSStates.SetupComplete, onFightClick: () -> Unit)
                 secondHero = state.secondContestant,
             )
         }
-        FightButton(Modifier.fillMaxSize(), onFightClick)
+        FightButton(onFightClick)
     }
 
 }
@@ -192,33 +191,21 @@ fun BScreenBody(modifier: Modifier = Modifier, onHeroSelect: (Int) -> Unit) {
 }
 
 @Composable
-fun BattleScreen(viewModel: VsViewModel, state: VSStates.Battling) {
-    Column(
-        modifier = Modifier
-            .padding(bottom = 25.dp)
-    ) {
+fun BattleScreen(state: VSStates.Battling,onFightClick: () -> Unit) {
         Column(
             modifier = Modifier
                 .padding(top = 50.dp)
         ) {
             VSHeroSection(
-                Modifier.padding(top = 50.dp),
                 firstHero = state.firstContestant,
                 secondHero = state.secondContestant,
             )
+            ScoreSection(
+                state
+            )
+            HeroVsStats(state = state)
+            FightButton(onFightClick)
         }
-        ScoreSection(
-            state
-        )
-        HeroVsStats(state = state)
-        FightButton(
-            Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            viewModel.startFight()
-        }
-    }
 }
 
 @Composable
@@ -273,7 +260,7 @@ fun ScoreSection(state: VSStates.Battling) {
             ScoreCard(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 16.dp),
+                    .padding(start = 20.dp),
                 score = winsFirstContestant
             )
             Column(
@@ -284,7 +271,7 @@ fun ScoreSection(state: VSStates.Battling) {
             ScoreCard(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 16.dp),
+                    .padding(start = 20.dp),
                 score = winsSecondContestant
             )
         }
@@ -376,13 +363,13 @@ fun ScoreCard(
     score: Int
 ) {
     Column(
-        modifier = modifier.padding(16.dp),
+        modifier = modifier.padding(start = 24.dp),
         horizontalAlignment = Alignment.Start
     ) {
         ElevatedCard(
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp),
             modifier = Modifier
-                .size(width = 150.dp, height = 150.dp)
+                .size(width = 100.dp, height = 100.dp)
                 .padding(8.dp)
                 .clip(RoundedCornerShape(16.dp))
         ) {
@@ -408,7 +395,7 @@ fun ScoreCard(
 }
 
 @Composable
-fun FightButton(modifier: Modifier = Modifier, startFight: () -> Unit) {
+fun FightButton(startFight: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Bottom,
@@ -417,7 +404,8 @@ fun FightButton(modifier: Modifier = Modifier, startFight: () -> Unit) {
         Button(
             onClick = startFight,
             contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-            colors = ButtonDefaults.buttonColors()
+            colors = ButtonDefaults.buttonColors(),
+            modifier = Modifier.padding(16.dp)
         ) {
             Text("FIGHT")
         }
@@ -438,7 +426,7 @@ fun HeroStats(
 ) {
     val maxStat = maxOf(firstHeroStatValue, secondHeroStatValue)
 
-    val stat1Color = when {
+    val statColor = when {
         firstHeroStatValue > secondHeroStatValue -> Color.Blue
         firstHeroStatValue < secondHeroStatValue -> Color.Red
         else -> Color.Green
@@ -461,14 +449,11 @@ fun HeroStats(
     }
     Box(
         modifier = Modifier
+            .padding(start = 8.dp, end = 8.dp)
             .fillMaxWidth()
             .height(height)
             .background(
-                if (isSystemInDarkTheme()) {
-                    Color(0xFF505050)
-                } else {
-                    Color.LightGray
-                }
+                MaterialTheme.colorScheme.primary,
             )
             .clip(RoundedCornerShape(16.dp))
     ) {
@@ -479,8 +464,9 @@ fun HeroStats(
                 .fillMaxHeight()
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(stat1Color)
+                .background(statColor)
                 .padding(horizontal = 8.dp)
+
         ) {
             Image(
                 modifier = Modifier.size(28.dp),
@@ -503,39 +489,39 @@ fun HeroVsStats(
     Surface(
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 16.dp)
             .clip(RoundedCornerShape(16.dp))
+            .height(150.dp)
     ) {
-                val rounds = state.rounds
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    item {
-                        Text(
-                            text = "Rounds",
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp)
-                        )
-                    }
-
-                    itemsIndexed(rounds) { index, round ->
-                        HeroStats(
-                            statIcon = round.category,
-                            firstHeroStatValue = round.statValue1,
-                            secondHeroStatValue = round.statValue2,
-                            statMaxValue = 100,
-                            animDelay = index * animDelayPerItem
-                        )
-                    }
-                }
+        val rounds = state.rounds
+        LazyColumn() {
+            item {
+                Text(
+                    text = "Rounds",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+
+            itemsIndexed(rounds) { index, round ->
+                HeroStats(
+                    statIcon = round.category,
+                    firstHeroStatValue = round.statValue1,
+                    secondHeroStatValue = round.statValue2,
+                    statMaxValue = 100,
+                    animDelay = index * animDelayPerItem
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
+    }
+
+}
+
 
 
 

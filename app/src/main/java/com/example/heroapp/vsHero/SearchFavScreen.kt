@@ -15,11 +15,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +37,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +47,6 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.heroapp.data.room.FavoriteHero
 import com.example.heroapp.domain.VSStates
-import com.example.heroapp.heroList.SearchBar
 import timber.log.Timber
 
 
@@ -69,12 +78,57 @@ fun SearchFavScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primaryContainer)
+                .background(Brush.verticalGradient(gradientColors))
                 .padding(innerPading)
 
         ) {
             HeroGrid(heroList = favHeroList, navController = navController, state = currentState, color = gradientColors)
         }
+    }
+}
+@Composable
+fun SearchBar(
+    modifier: Modifier = Modifier,
+    onSearch: (String) -> Unit = {},
+) {
+    var text by remember { mutableStateOf("") }
+    Box(modifier = modifier) {
+        TextField(
+            value = text,
+            onValueChange = {
+                text = it
+            },
+            textStyle = TextStyle(color = Color.Black),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Search
+            ),
+            label = { Text("Search...") },
+            singleLine = true,
+            placeholder = { Text("Write a superhero name") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Localized description") },
+            trailingIcon = {
+                if (text.isNotEmpty()) {
+                    Icon(
+                        Icons.Filled.Clear,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.clickable {
+                            text = ""
+                        }
+                    )
+                }
+            },
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    onSearch(text)
+                }
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(5.dp, CircleShape)
+                .background(Color(0xFFB4B4B4))
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .clip(RoundedCornerShape(30.dp))
+        )
     }
 }
 @Composable
