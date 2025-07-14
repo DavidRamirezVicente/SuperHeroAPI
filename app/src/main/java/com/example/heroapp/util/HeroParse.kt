@@ -1,6 +1,8 @@
 package com.example.heroapp.util
 
+import android.graphics.drawable.Drawable
 import androidx.compose.ui.graphics.Color
+import com.example.heroapp.R
 import com.example.heroapp.ui.theme.CombatColor
 import com.example.heroapp.ui.theme.DurabilityColor
 import com.example.heroapp.ui.theme.IntelligColor
@@ -19,6 +21,18 @@ class HeroParse {
             "durability" -> DurabilityColor
             "power" -> PowerColor
             "combat" -> CombatColor
+            else -> Color.White
+        }
+    }
+
+    fun parseStatToIcon(statName: String): Any {
+        return when(statName.lowercase(Locale.ROOT)) {
+            "intelligence" -> R.drawable.intelligence_removebg_preview
+            "strength" -> R.drawable.strength_removebg_preview
+            "speed" -> R.drawable.speed_removebg_preview
+            "durability" -> R.drawable.logo_shield_png
+            "power" -> R.drawable.power_removebg_preview
+            "combat" -> R.drawable.fist_removebg_preview
             else -> Color.White
         }
     }

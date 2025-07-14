@@ -2,7 +2,6 @@ package com.example.heroapp.heroDetail
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -24,12 +23,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -71,10 +68,9 @@ import coil.compose.AsyncImage
 import com.example.heroapp.R
 import com.example.heroapp.data.remote.responses.Appearance
 import com.example.heroapp.data.remote.responses.Biography
-import com.example.heroapp.data.remote.responses.Powerstats
 import com.example.heroapp.domain.model.Hero
+import com.example.heroapp.domain.model.PowerStats
 import com.example.heroapp.util.HeroParse
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,20 +96,23 @@ fun HeroDetailScreen(
                         title = { Text(text = "") },
                         navigationIcon = {
                             IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(imageVector = Icons.Filled.ArrowBack,
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Go back",
-                                    modifier = Modifier.size(45.dp))
+                                    modifier = Modifier.size(45.dp)
+                                )
                             }
                         },
                         actions = {
                             IconButton(onClick = {
-                                if (isFavorite){
+                                if (isFavorite) {
                                     viewModel.deleteFavoriteHero(it.id)
-                                }else{
+                                } else {
                                     viewModel.saveFavoriteHero(it.id, it.name, it.image)
                                 }
                             }) {
-                                Icon(imageVector = Icons.Filled.Star,
+                                Icon(
+                                    imageVector = Icons.Filled.Star,
                                     contentDescription = "Favorite",
                                     tint = if (isFavorite) Color.Yellow else Color.White,
                                     modifier = Modifier.size(45.dp)
@@ -129,78 +128,82 @@ fun HeroDetailScreen(
                             MaterialTheme.colorScheme.surface
                         ),
 
-                    )
+                        )
                 }
             }
 
         }
     ) { innerPading ->
-        Column(
-            modifier = Modifier
-                .background(dominantColor)
-                .padding(innerPading)
-                //.offset(y = -(heroImageSize/2))
-        ) {
-                heroInfoResult?.let { result ->
-                    HeroDetailStateWrapper(
-                        heroInfo = result,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(
-                                top = 16.dp,
-                                start = 16.dp,
-                                end = 16.dp,
-                                bottom = 16.dp
-                            )
-                            .shadow(10.dp, RoundedCornerShape(10.dp))
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(16.dp)
-                    )
-                }
-        }
+        LazyColumn {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(dominantColor)
+                        .padding(innerPading)
+                ) {
+                    heroInfoResult?.let { result ->
+                        HeroDetailStateWrapper(
+                            heroInfo = result,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(
+                                    top = 100.dp,
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    bottom = 30.dp
+                                )
+                                .shadow(10.dp, RoundedCornerShape(10.dp))
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(
+                                    top = 60.dp,
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    bottom = 16.dp
+                                )
+                                .align(Alignment.BottomCenter)
+                        )
+                        Box(
+                            contentAlignment = Alignment.TopCenter,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            heroInfoResult?.let { result ->
+                                if (result.isSuccess) {
+                                    val hero = result.getOrThrow()
+                                    AsyncImage(
+                                        model = hero.image,
+                                        contentDescription = hero.name,
+                                        modifier = Modifier
+                                            .size(heroImageSize)
+                                            .padding(10.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
 
+                }
+            }
+        }
     }
 }
+
+
 @Composable
 fun HeroDetailStateWrapper(
     heroInfo: Result<Hero>,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .padding(
-                top = 16.dp,
-                start = 16.dp,
-                end = 16.dp,
-                bottom = 16.dp
-            )
-            .shadow(10.dp, RoundedCornerShape(10.dp))
-            .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp)
-    ) {
-        item {
-            heroInfo.getOrNull().let {
-                if (it != null) {
-                    AsyncImage(
-                        model = it.image,
-                        contentDescription = it.name,
-                        modifier = Modifier
-                            .height(180.dp)
-                            .fillMaxWidth()
-                    )
-                }
-            }
-            if (heroInfo.isSuccess) {
-                HeroDetailSection(
-                    heroInfo = heroInfo.getOrThrow(),
-                    modifier = modifier
-                )
-            } else if (heroInfo.isFailure) {
-                Text(text = "Error fetching hero data. Please try again later.")
-            }
-        }
+    if (heroInfo.isSuccess) {
+        HeroDetailSection(
+            heroInfo = heroInfo.getOrThrow(),
+            modifier = modifier
+                .offset(y = (-70).dp)
+        )
+    } else if (heroInfo.isFailure) {
+        Text(text = "Error fetching hero data. Please try again later.")
     }
 }
 
@@ -210,33 +213,30 @@ fun HeroDetailSection(
     heroInfo: Hero,
     modifier: Modifier = Modifier
 ) {
-    //val scrollState = rememberScrollState()
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            //.fillMaxSize()
-            //.verticalScroll(scrollState)
-            .padding(top = 77.dp)
+            .fillMaxSize()
+            // .verticalScroll(scrollState)
+            .padding(top = 120.dp)
     ) {
-            Text(
-                text = firstCharCap(heroInfo.name),
-                fontWeight = FontWeight.Bold,
-                fontSize = 30.sp,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            HeroRaceSection(info = heroInfo.appearance)
-            HeroDetailDataSection(
-                heroWeight = heroInfo.appearance.weight[1],
-                heroHeight = heroInfo.appearance.height[1]
-            )
-            HeroBaseStats(powerstat = heroInfo.powerstats, heroParse = HeroParse())
-            Spacer(modifier = Modifier.height(16.dp))
-            HeroBiography(biography = heroInfo.biography)
+        Text(
+            text = firstCharCap(heroInfo.name),
+            fontWeight = FontWeight.Bold,
+            fontSize = 30.sp,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        HeroRaceSection(info = heroInfo.appearance)
+        HeroDetailDataSection(
+            heroWeight = heroInfo.appearance.weight[1],
+            heroHeight = heroInfo.appearance.height[1]
+        )
+        HeroBaseStats(powerstat = heroInfo.powerstats, heroParse = HeroParse())
+        Spacer(modifier = Modifier.height(16.dp))
+        HeroBiography(biography = heroInfo.biography)
     }
 }
-
 
 @Composable
 fun HeroRaceSection(info: Appearance) {
@@ -356,32 +356,36 @@ fun HeroStats(
         modifier = Modifier
             .fillMaxWidth()
             .height(height)
-            .background(
-                if (isSystemInDarkTheme()) {
-                    Color(0xFF505050)
-                } else {
-                    Color.LightGray
-                }
-            )
             .clip(RoundedCornerShape(16.dp))
+            .background(Color.LightGray)
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(curPercent.value) // ✅ barra animada de color
+                .background(statColor)
+        )
         Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.Absolute.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(curPercent.value)
+                .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
                 .background(statColor)
                 .padding(horizontal = 8.dp)
         ) {
+            val isDarkMode = isSystemInDarkTheme()
+            val textColor = if (isDarkMode) Color.White else Color.Black
             Text(
                 text = statName,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = textColor
             )
             Text(
                 text = (curPercent.value * statMaxValue).toInt().toString(),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = textColor
             )
         }
     }
@@ -389,7 +393,7 @@ fun HeroStats(
 
 @Composable
 fun HeroBaseStats(
-    powerstat: Powerstats,
+    powerstat: PowerStats,
     heroParse: HeroParse,
     animDelayPerItem: Int = 100,
 ) {
@@ -404,8 +408,6 @@ fun HeroBaseStats(
     ) {
         Column(
             modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.secondaryContainer)
                 .fillMaxSize()
         ) {
             Row(
@@ -442,8 +444,6 @@ fun HeroBaseStats(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .clip(RoundedCornerShape(16.dp))
                 ) {
-                    Spacer(modifier = Modifier.height(4.dp))
-
                     val properties = listOf(
                         "Combat" to powerstat.combat,
                         "Durability" to powerstat.durability,

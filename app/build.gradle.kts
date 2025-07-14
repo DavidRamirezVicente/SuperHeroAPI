@@ -113,6 +113,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit2.kotlinx.serialization.converter)
 
+    //FlowRedux
+    implementation (libs.flowredux)
+
 }
 
 hilt {

@@ -1,9 +1,10 @@
 package com.example.heroapp.data.remote.responses
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Powerstats(
+data class PowerstatsResponse(
     val combat: String,
     val durability: String,
     val intelligence: String,

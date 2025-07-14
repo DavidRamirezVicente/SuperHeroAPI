@@ -3,6 +3,7 @@ package com.example.heroapp.favoriteHeroes
 import androidx.compose.foundation.Image
 import coil.request.ImageRequest
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -69,7 +70,8 @@ fun FavoriteHeroListScreen(
     viewModel: FavoriteHeroViewModel = hiltViewModel(),
 
 ) {
-    val gradientColors = listOf(Color(0xFF3D5AFE), Color(0xFF2979FF))
+    val gradientColors = listOf(Color(0xFF243B55), Color(0xFF141E30))
+
     val favHeroList by viewModel.allFavoriteHeroes.collectAsState(initial = emptyList())
 
     Scaffold(
@@ -77,17 +79,15 @@ fun FavoriteHeroListScreen(
             CenterAlignedTopAppBar(
                 modifier = Modifier.height(140.dp),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    containerColor = Color(0xFF243B55),
+                    titleContentColor = Color(0xFF141E30),
                 ),
                 title = {
                     Text(
                         modifier = Modifier.padding(top = 52.dp),
                         text = "FAVORITES",
                         style = TextStyle(
-                            brush = Brush.linearGradient(
-                                colors = gradientColors
-                            )
+                                color = Color(0xFFFFC400)
                         ),
                         fontSize = 50.sp,
                         fontWeight = FontWeight.ExtraBold
@@ -104,64 +104,10 @@ fun FavoriteHeroListScreen(
                 .padding(innerPading)
 
         ) {
-            HeroGrid(heroList = favHeroList, navController = navController, viewModel = viewModel)
+            HeroGrid(heroList = favHeroList, navController = navController, viewModel = viewModel, color = gradientColors)
         }
     }
 }
-
-
-@Composable
-fun SearchBar(
-    modifier: Modifier = Modifier,
-    onSearch: (String) -> Unit = {}
-) {
-    var text by remember { mutableStateOf("") }
-
-    Box(modifier = modifier) {
-        TextField(
-            value = text,
-            onValueChange = {
-                text = it
-            },
-            textStyle = TextStyle(color = Color.Black),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
-            ),
-            label = { Text("Search...") },
-            singleLine = true,
-            placeholder = { Text("Write a superhero name") },
-            leadingIcon = {
-                Icon(
-                    Icons.Filled.Search,
-                    contentDescription = "Localized description"
-                )
-            },
-            trailingIcon = {
-                if (text.isNotEmpty()) {
-                    Icon(
-                        Icons.Filled.Clear,
-                        contentDescription = "Localized description",
-                        modifier = Modifier.clickable {
-                            text = ""
-                        }
-                    )
-                }
-            },
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onSearch(text)
-                }
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(5.dp, CircleShape)
-                .background(Color.White, CircleShape)
-                .padding(horizontal = 20.dp, vertical = 12.dp)
-                .clip(RoundedCornerShape(30.dp))
-        )
-    }
-}
-
 @Composable
 fun HeroEntry(
     entry: FavoriteHero,
@@ -177,17 +123,13 @@ fun HeroEntry(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .shadow(10.dp, RoundedCornerShape(16.dp))
+            .shadow(10.dp, RoundedCornerShape(16.dp), ambientColor = Color(0xFFFFC400), spotColor = Color(0xFFFFC400) )
             .clip(RoundedCornerShape(16.dp))
             .aspectRatio(1f)
             .background(
-                Brush.verticalGradient(
-                    listOf(
-                        dominantColor,
-                        defaultDominantColor
-                    )
-                )
+                Color(0xFF8F8F8F)
             )
+
             .clickable {
                 navController.navigate(
                     "hero_detail_screen/${dominantColor.toArgb()}/${entry.id}"
@@ -232,11 +174,12 @@ fun HeroGrid(
     heroList: List<FavoriteHero>,
     navController: NavController,
     viewModel: FavoriteHeroViewModel,
+    color: List<Color>
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(Brush.verticalGradient(color))
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {

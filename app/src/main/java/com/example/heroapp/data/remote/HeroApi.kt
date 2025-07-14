@@ -2,6 +2,8 @@ package com.example.heroapp.data.remote
 
 import com.example.heroapp.data.remote.responses.HeroItemResponse
 import com.example.heroapp.data.remote.responses.HeroResponse
+import com.example.heroapp.data.remote.responses.PowerstatsResponse
+import com.example.heroapp.data.remote.responses.StatsResponse
 import com.example.heroapp.domain.mapper.HeroMapper
 import com.example.heroapp.domain.model.Hero
 import retrofit2.http.GET
@@ -20,4 +22,10 @@ interface HeroApi {
         @Path("apiKey") apiKey: String,
         @Path("heroId") heroId: String
     ): HeroItemResponse
+
+    @GET("api/{apiKey}/{heroId}/powerstats")
+        suspend fun getPowerStats(
+            @Path("apiKey") apiKey: String,
+            @Path("heroId") heroId: String
+        ): StatsResponse
 }
