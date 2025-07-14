@@ -71,6 +71,7 @@ fun FavoriteHeroListScreen(
 
 ) {
     val gradientColors = listOf(Color(0xFF243B55), Color(0xFF141E30))
+
     val favHeroList by viewModel.allFavoriteHeroes.collectAsState(initial = emptyList())
 
     Scaffold(
