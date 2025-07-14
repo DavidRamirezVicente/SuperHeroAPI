@@ -356,32 +356,36 @@ fun HeroStats(
         modifier = Modifier
             .fillMaxWidth()
             .height(height)
-            .background(
-                if (isSystemInDarkTheme()) {
-                    Color(0xFF505050)
-                } else {
-                    Color.LightGray
-                }
-            )
             .clip(RoundedCornerShape(16.dp))
+            .background(Color.LightGray)
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(curPercent.value) // ✅ barra animada de color
+                .background(statColor)
+        )
         Row(
             horizontalArrangement = Arrangement.Absolute.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(curPercent.value)
+                .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
                 .background(statColor)
                 .padding(horizontal = 8.dp)
         ) {
+            val isDarkMode = isSystemInDarkTheme()
+            val textColor = if (isDarkMode) Color.White else Color.Black
             Text(
                 text = statName,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = textColor
             )
             Text(
                 text = (curPercent.value * statMaxValue).toInt().toString(),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = textColor
             )
         }
     }

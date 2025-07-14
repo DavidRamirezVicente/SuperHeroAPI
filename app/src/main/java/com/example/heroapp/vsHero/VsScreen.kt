@@ -5,10 +5,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -54,11 +54,11 @@ import coil.request.ImageRequest
 import com.example.heroapp.data.room.FavoriteHero
 import com.example.heroapp.domain.VSStates
 import com.example.heroapp.ui.theme.HeroAppTheme
+import kotlinx.coroutines.flow.compose
 import timber.log.Timber
 
 @Composable
 fun VsScreen(
-    navController: NavController,
     viewModel: VsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -66,7 +66,7 @@ fun VsScreen(
     when (state) {
         is VSStates.NoActiveMatch -> NoActiveMatchScreen { viewModel.startMatch() }
         is VSStates.SettingUpMatch -> SettingUpMatchScreen(state as VSStates.SettingUpMatch)
-        is VSStates.SettingUpSearch -> SearchFavScreen(navController)
+        is VSStates.SettingUpSearch -> SearchFavScreen()
         is VSStates.SetupComplete -> SetUpCompleteScreen(state = state as VSStates.SetupComplete) {
             viewModel.startFight()
         }
@@ -78,6 +78,10 @@ fun VsScreen(
 
         is VSStates.Battling -> BattleScreen(state = state as VSStates.Battling) {
             viewModel.startFight()
+        }
+
+        is VSStates.Winner -> WinnerScreen(state as VSStates.Winner){
+            viewModel.returnToStart()
         }
     }
 
@@ -139,6 +143,7 @@ fun SetUpCompleteScreen(state: VSStates.SetupComplete, onFightClick: () -> Unit)
 fun RollingDiceScreen(viewModel: VsViewModel, state: VSStates.RollingDice) {
     val value by viewModel.diceResult.collectAsState()
     val powerstat = viewModel.getPowerStat(value)
+    val isEnabled by viewModel.isRollEnabled.collectAsState()
 
     Column(
         modifier = Modifier
@@ -169,8 +174,8 @@ fun RollingDiceScreen(viewModel: VsViewModel, state: VSStates.RollingDice) {
     ) {
         Image(
             modifier = Modifier
-                .clickable {
-                    viewModel.rollDice()
+                .clickable(enabled = isEnabled) {
+                        viewModel.rollDice()
                 },
             painter = painterResource(viewModel.imageResource(value)),
             contentDescription = null
@@ -178,17 +183,6 @@ fun RollingDiceScreen(viewModel: VsViewModel, state: VSStates.RollingDice) {
     }
 }
 
-@Composable
-fun BScreen(viewModel: VsViewModel, state: VSStates.Battling, modifier: Modifier = Modifier) {
-    BScreenBody {
-        viewModel.onCellSelect(it)
-    }
-}
-
-@Composable
-fun BScreenBody(modifier: Modifier = Modifier, onHeroSelect: (Int) -> Unit) {
-
-}
 
 @Composable
 fun BattleScreen(state: VSStates.Battling,onFightClick: () -> Unit) {
@@ -207,6 +201,23 @@ fun BattleScreen(state: VSStates.Battling,onFightClick: () -> Unit) {
             FightButton(onFightClick)
         }
 }
+
+@Composable
+fun WinnerScreen(state: VSStates.Winner, onReturnClick: () -> Unit) {
+    val hero = state.hero
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        TopHeroWin(entry = hero)
+        WinnerImage(entry = hero)
+        ReturnButton(onReturnClick)
+    }
+}
+
+
 
 @Composable
 fun VSHeroSection(
@@ -301,7 +312,7 @@ fun BeginButton(onClick: () -> Unit) {
 fun HeroCard(
     entry: FavoriteHero?,
     modifier: Modifier = Modifier,
-    slotId: Int
+    slotId: Int?
 ) {
     val viewModel: VsViewModel = hiltViewModel()
 
@@ -452,9 +463,6 @@ fun HeroStats(
             .padding(start = 8.dp, end = 8.dp)
             .fillMaxWidth()
             .height(height)
-            .background(
-                MaterialTheme.colorScheme.primary,
-            )
             .clip(RoundedCornerShape(16.dp))
     ) {
         Row(
@@ -522,7 +530,59 @@ fun HeroVsStats(
 
 }
 
+@Composable
+fun TopHeroWin(entry: FavoriteHero?) {
+    Column(
+        modifier = Modifier
+            .padding(top = 80.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = entry?.name ?: "¡DRAW!",
+            fontSize = 40.sp,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.ExtraBold
+        )
+        Text(
+            text = if (entry != null) "WINS!" else "",
+            fontSize = 40.sp,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.ExtraBold
+        )
+    }
+}
 
+@Composable
+fun WinnerImage(entry: FavoriteHero?) {
+    entry?.let {
+        val painter = rememberAsyncImagePainter(
+            ImageRequest.Builder(LocalContext.current)
+                .data(it.image)
+                .crossfade(true)
+                .build()
+        )
+        Image(
+            painter = painter,
+            contentDescription = it.name,
+            modifier = Modifier
+                .size(200.dp),
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.Center
+        )
+    }
+}
+
+@Composable
+fun ReturnButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth()
+            .padding(bottom = 12.dp ),
+        contentPadding = PaddingValues(vertical = 12.dp)
+    ) {
+        Text("RETURN")
+    }
+}
 
 
 @Preview

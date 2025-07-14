@@ -1,6 +1,5 @@
 package com.example.heroapp.vsHero
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.heroapp.R
@@ -12,13 +11,9 @@ import com.example.heroapp.repository.VSRepository
 import com.example.heroapp.util.StateMachine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -33,6 +28,8 @@ class VsViewModel @Inject constructor(
 
 
     val state = MutableStateFlow<VSStates>(VSStates.NoActiveMatch)
+    val _isRollEnabled = MutableStateFlow(true)
+    val isRollEnabled: StateFlow<Boolean> get() = _isRollEnabled
 
     init {
         viewModelScope.launch {
@@ -47,32 +44,20 @@ class VsViewModel @Inject constructor(
     private val _diceResult = MutableStateFlow(0)
     val diceResult: StateFlow<Int> get() = _diceResult
 
-    private var winsFirst = 0
-    private var winsSecond = 0
-
-
-    private val roundResults = mutableListOf<VSStates.RoundResult>()
-
     fun startMatch() {
         viewModelScope.launch {
             dispatch(VSActions.Begin)
         }
     }
 
-    fun onCellSelect(slotId: Int) {
+    fun onCellSelect(slotId: Int?) {
         viewModelScope.launch {
             dispatch(VSActions.SearchParticipant(slotId))
         }
     }
 
-    fun searchParticipants(query: String) {
-        viewModelScope.launch {
-            val heroesFlow = vsRepository.searchHeroes(query)
-            dispatch(VSActions.UpdatedSearch(query, heroesFlow))
-        }
-    }
 
-    fun selectParticipant(hero: FavoriteHero, slotId: Int) {
+    fun selectParticipant(hero: FavoriteHero, slotId: Int?) {
         viewModelScope.launch {
             dispatch(VSActions.SelectParticipant(hero, slotId))
         }
@@ -83,14 +68,37 @@ class VsViewModel @Inject constructor(
             dispatch(VSActions.StartBattle)
         }
     }
+    fun getStatIcon(stat: String): Int {
+        return when (stat) {
+            "Combat" -> R.drawable.fist_removebg_preview
+            "Durability" -> R.drawable.logo_shield_png
+            "Intelligence" -> R.drawable.intelligence_removebg_preview
+            "Power" -> R.drawable.power_removebg_preview
+            "Speed" -> R.drawable.speed_removebg_preview
+            "Strength" -> R.drawable.strength_removebg_preview
+            else -> R.drawable.dice_1
+        }
+    }
 
     fun rollDice() {
+        if (_isRollEnabled.value.not()) return
         _diceResult.value = (1..6).random()
+        _isRollEnabled.value = false
         viewModelScope.launch {
-            Timber.d("Dado")
-            calculateScores()
-            delay(1000)
+            val currentState = state.value
+            if (currentState is VSStates.RollingDice) {
+                val category = getPowerStat(diceResult.value)
+                val firstHeroStat = loadPowerStatValue(currentState.firstContestant.id, category) ?: 0
+                val secondHeroStat = loadPowerStatValue(currentState.secondContestant.id, category) ?: 0
+                val statIcon = getStatIcon(category)
+                dispatch(VSActions.SetRoundResult(statIcon, firstHeroStat, secondHeroStat))
+                _isRollEnabled.value = true
+            }
         }
+    }
+
+    fun returnToStart() {
+        dispatch(VSActions.Return)
     }
 
     fun getPowerStat(result: Int): String {
@@ -137,7 +145,7 @@ class VsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun calculateScores() {
+    /*private suspend fun calculateScores() {
         Timber.d("Calculate Scores")
         val currentState = state.value
         if (currentState is VSStates.RollingDice) {
@@ -193,6 +201,24 @@ class VsViewModel @Inject constructor(
         }
 
     }
+    private suspend fun winner(hero: FavoriteHero){
+        val currenState = state.value
+        val winner = VSStates.Winner(hero)
+        if (currenState is VSStates.Battling){
+            if (winsFirst == 3){
+                winner
+            }
+            if (winsSecond == 3){
+                winner
+            }
+            if (winsSecond == 3 && winsFirst==3){
+                Timber.d("Empate")
+
+            }
+        }
+
+
+    }*/
 
     fun dispatch(action: VSActions) {
         viewModelScope.launch {

@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -38,6 +37,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,7 +53,6 @@ import timber.log.Timber
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchFavScreen(
-    navController: NavController,
     vsViewModel: VsViewModel = hiltViewModel()
     ) {
     val gradientColors = listOf(Color(0xFF243B55), Color(0xFF141E30))
@@ -62,17 +61,16 @@ fun SearchFavScreen(
 
     Scaffold(
         topBar = {
-            SearchBar(
+            Text(
+                text = "VS",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 30.dp, start = 15.dp, end = 15.dp),
-            ) { newSearchTerm ->
-                if (newSearchTerm.isNotEmpty()) {
-                    vsViewModel.searchParticipants(newSearchTerm)
-                } else {
-                    Timber.d("Escribe el nombre de un superheroe")
-                }
-            }
+                    .padding(top = 30.dp),
+                color = Color.White,
+                fontSize = 30.sp,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold
+            )
         }
     ) { innerPading ->
         Column(
@@ -82,61 +80,15 @@ fun SearchFavScreen(
                 .padding(innerPading)
 
         ) {
-            HeroGrid(heroList = favHeroList, navController = navController, state = currentState, color = gradientColors)
+            HeroGrid(heroList = favHeroList, state = currentState, color = gradientColors)
         }
-    }
-}
-@Composable
-fun SearchBar(
-    modifier: Modifier = Modifier,
-    onSearch: (String) -> Unit = {},
-) {
-    var text by remember { mutableStateOf("") }
-    Box(modifier = modifier) {
-        TextField(
-            value = text,
-            onValueChange = {
-                text = it
-            },
-            textStyle = TextStyle(color = Color.Black),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
-            ),
-            label = { Text("Search...") },
-            singleLine = true,
-            placeholder = { Text("Write a superhero name") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Localized description") },
-            trailingIcon = {
-                if (text.isNotEmpty()) {
-                    Icon(
-                        Icons.Filled.Clear,
-                        contentDescription = "Localized description",
-                        modifier = Modifier.clickable {
-                            text = ""
-                        }
-                    )
-                }
-            },
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onSearch(text)
-                }
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(5.dp, CircleShape)
-                .background(Color(0xFFB4B4B4))
-                .padding(horizontal = 20.dp, vertical = 12.dp)
-                .clip(RoundedCornerShape(30.dp))
-        )
     }
 }
 @Composable
 fun HeroEntry(
     entry: FavoriteHero,
-    navController: NavController,
     modifier: Modifier = Modifier,
-    slotId: Int,
+    slotId: Int?,
     viewModel: VsViewModel = hiltViewModel()
 ) {
 
@@ -185,7 +137,6 @@ fun HeroEntry(
 @Composable
 fun HeroGrid(
     heroList: List<FavoriteHero>,
-    navController: NavController,
     state: VSStates,
     color: List<Color>
 ) {
@@ -207,7 +158,7 @@ fun HeroGrid(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(heroList) { heroEntry ->
-                HeroEntry(entry = heroEntry, navController = navController,  slotId = slotId)
+                HeroEntry(entry = heroEntry, slotId = slotId)
             }
         }
     }

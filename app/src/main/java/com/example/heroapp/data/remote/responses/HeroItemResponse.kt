@@ -1,8 +1,10 @@
 package com.example.heroapp.data.remote.responses
 
+import android.annotation.SuppressLint
 import com.example.heroapp.domain.model.PowerStats
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class HeroItemResponse(
     val appearance: @Contextual Appearance,

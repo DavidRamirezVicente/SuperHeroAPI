@@ -13,9 +13,8 @@ class VSRepository @Inject constructor(
     private val heroService: HeroServices,
     private val db: FavoriteHeroDatabase
 ) {
-    fun searchHeroes(name: String): Flow<List<FavoriteHero?>> {
+    fun searchHeroes(name: String): Flow<List<FavoriteHero>> {
         return db.heroDao.searchByName(name)
-
         }
     suspend fun getHeroPowerStats(heroId: String): Result<PowerStats>{
         return runCatching {

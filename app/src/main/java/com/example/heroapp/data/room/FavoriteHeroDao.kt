@@ -21,8 +21,9 @@ interface FavoriteHeroDao {
     @Query("DELETE FROM favoritehero WHERE id = :heroId")
     suspend fun deleteHeroById(heroId: String)
 
-    @Query("SELECT * FROM favoritehero WHERE name LIKE '%' || :heroName || '%'")
-    fun searchByName(heroName: String): Flow<List<FavoriteHero?>>
+    @Query("SELECT * FROM favoritehero WHERE LOWER(name) LIKE '%' || LOWER(:heroName) || '%'")
+    fun searchByName(heroName: String): Flow<List<FavoriteHero>>
+
 
 
 }

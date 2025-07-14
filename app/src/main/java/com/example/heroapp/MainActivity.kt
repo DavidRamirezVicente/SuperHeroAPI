@@ -152,7 +152,7 @@ class MainActivity : ComponentActivity() {
                             FavoriteHeroListScreen(navController = navController)
                         }
                         composable("versus") {
-                            VsScreen(navController = navController)
+                            VsScreen()
                         }
                     }
                 }

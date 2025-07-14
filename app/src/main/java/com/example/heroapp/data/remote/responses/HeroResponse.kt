@@ -1,5 +1,6 @@
 package com.example.heroapp.data.remote.responses
 
+import android.annotation.SuppressLint
 import com.example.heroapp.domain.mapper.HeroMapper
 import com.example.heroapp.domain.model.Hero
 import com.google.gson.annotations.SerializedName
@@ -9,6 +10,7 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 
 
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class HeroResponse(
     val response: String,

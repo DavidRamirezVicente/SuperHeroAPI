@@ -30,7 +30,7 @@ class HeroParse {
             "intelligence" -> R.drawable.intelligence_removebg_preview
             "strength" -> R.drawable.strength_removebg_preview
             "speed" -> R.drawable.speed_removebg_preview
-            "durability" -> R.drawable.yunke
+            "durability" -> R.drawable.logo_shield_png
             "power" -> R.drawable.power_removebg_preview
             "combat" -> R.drawable.fist_removebg_preview
             else -> Color.White

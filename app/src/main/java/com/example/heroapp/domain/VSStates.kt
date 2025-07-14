@@ -1,7 +1,6 @@
 package com.example.heroapp.domain
 
 import com.example.heroapp.data.room.FavoriteHero
-import com.example.heroapp.domain.model.PowerStats
 import kotlinx.coroutines.flow.Flow
 
 sealed class VSStates {
@@ -14,7 +13,7 @@ sealed class VSStates {
         val previousState: SettingUpMatch,
         val queryText: String,
         val candidatesToPick: Flow<List<FavoriteHero?>>,
-        val slotId: Int
+        val slotId: Int?
     ) : VSStates()
     data class SetupComplete(
         val firstContestant: FavoriteHero,
@@ -39,6 +38,11 @@ sealed class VSStates {
         val firstContestant: FavoriteHero,
         val secondContestant: FavoriteHero,
     ) : VSStates()
+
+    data class Winner(
+        val hero: FavoriteHero?
+    ): VSStates()
+
 }
 
 

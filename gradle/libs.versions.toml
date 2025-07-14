@@ -1,6 +1,6 @@
 [versions]
 accompanistCoil = "0.15.0"
-agp = "8.3.0"
+agp = "8.11.0"
 coil = "2.5.0"
 converterGson = "2.9.0"
 flowredux = "1.2.1"

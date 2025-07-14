@@ -5,7 +5,6 @@ import com.example.heroapp.domain.VSActions
 import com.example.heroapp.domain.VSStates
 import com.freeletics.flowredux.dsl.FlowReduxStateMachine
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -54,24 +53,48 @@ class StateMachine : FlowReduxStateMachine<VSStates, VSActions>(initialState = V
             }
             inState<VSStates.RollingDice> {
                 on<VSActions.SetRoundResult> { action, state ->
+                    val previous = state.snapshot.previousState
                     val roundResult = VSStates.RoundResult(
                         category = action.category,
                         statValue1 = action.statValue1,
                         statValue2 = action.statValue2
                     )
-                    val updatedRounds = state.snapshot.previousState.rounds.toMutableList().apply{
-                        add(roundResult)
+
+                    val updatedRounds = previous.rounds.toMutableList().apply { add(roundResult) }
+
+                    val (addFirst, addSecond) = when {
+                        action.statValue1 > action.statValue2 -> 1 to 0
+                        action.statValue1 < action.statValue2 -> 0 to 1
+                        else -> 1 to 1
                     }
-                    state.override {
-                        VSStates.Battling(
-                            firstContestant = state.snapshot.firstContestant,
-                            secondContestant = state.snapshot.secondContestant,
-                            winsFirstContestant = state.snapshot.previousState.winsFirstContestant,
-                            winsSecondContestant = state.snapshot.previousState.winsSecondContestant,
-                            rounds = updatedRounds
-                        )
+
+                    val newWinsFirst = previous.winsFirstContestant + addFirst
+                    val newWinsSecond = previous.winsSecondContestant + addSecond
+
+                    when {
+                        newWinsFirst >= 3 && newWinsSecond >= 3 -> {
+                            state.override { VSStates.Winner(null) } // empate
+                        }
+                        newWinsFirst >= 3 -> {
+                            state.override { VSStates.Winner(previous.firstContestant) }
+                        }
+                        newWinsSecond >= 3 -> {
+                            state.override { VSStates.Winner(previous.secondContestant) }
+                        }
+                        else -> {
+                            state.override {
+                                VSStates.Battling(
+                                    firstContestant = previous.firstContestant,
+                                    secondContestant = previous.secondContestant,
+                                    winsFirstContestant = newWinsFirst,
+                                    winsSecondContestant = newWinsSecond,
+                                    rounds = updatedRounds
+                                )
+                            }
+                        }
                     }
                 }
+
             }
 
             inState<VSStates.Battling> {
@@ -85,13 +108,19 @@ class StateMachine : FlowReduxStateMachine<VSStates, VSActions>(initialState = V
                     }
                 }
             }
+            inState<VSStates.Winner>{
+                on<VSActions.Return>{_,state ->
+                state.override {
+                    VSStates.NoActiveMatch
+                }}
+            }
 
         }
     }
     private fun updateContestantSelection(
         currentState: VSStates.SettingUpSearch,
         selectedHero: FavoriteHero,
-        slotId: Int
+        slotId: Int?
     ): VSStates.SettingUpMatch {
         return if (slotId == 1) {
             currentState.previousState.copy(firstContestant = selectedHero)
